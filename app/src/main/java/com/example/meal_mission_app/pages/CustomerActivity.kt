@@ -22,11 +22,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.Polyline
-import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,27 +43,13 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
     private var isRunning = false
-    private var currentPolyline: Polyline? = null
-    private var originMarker: Marker? = null //Keep track of the origin marker
-    private var destinationMarker: Marker? = null// Keep track of the destination marker
+    private var destinationMarker: Marker? = null // Customer's location
+    private var originMarker: Marker? = null // Driver's location
+    private var currentPolyline: Polyline? = null // Route polyline
 
-    private lateinit var apiKey: String
-
-    // FusedLocationProviderClient for getting the customer's GPS location
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-
-    // Flag to toggle between dummy data and real data
-    private val useDummyData = false
-
-    // Dummy origin data
-    private val dummyOriginPoints = listOf(
-        LatLng(-18.147629, 178.447076),
-        LatLng(-18.145983, 178.446858),
-        LatLng(-18.143944, 178.448124),
-        LatLng(-18.140436, 178.449070),
-        LatLng(-18.138677, 178.449131)
-    )
-    private var currentDummyIndex = 0
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var apiKey: String
 
     companion object {
         private const val REQUEST_LOCATION_PERMISSIONS_CODE = 1001
@@ -77,8 +59,6 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_customer)
-
-        // Retrieve API key from AndroidManifest.xml
         apiKey = getApiKeyFromManifest()
 
         // Initialize the map
@@ -99,18 +79,13 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
             stopProcess()
         }
     }
-    private fun getApiKeyFromManifest(): String {
-        try {
-            val applicationInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
-            val bundle = applicationInfo.metaData
-            return bundle.getString("com.google.android.geo.API_KEY") ?: ""
-        } catch (e: PackageManager.NameNotFoundException) {
-            Log.e(TAG, "Failed to load API key from manifest", e)
-            return ""
-        }
-    }
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        // Enable MyLocation layer if permissions are granted
+        if (checkLocationPermission()) {
+            mMap.isMyLocationEnabled = true
+        }
         // Check for location permissions and fetch location if granted
         checkLocationPermissionAndSettings()
     }
@@ -138,13 +113,16 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun requestLocationPermission() {
         ActivityCompat.requestPermissions(
             this,
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ),
             REQUEST_LOCATION_PERMISSIONS_CODE
         )
     }
 
     private fun checkLocationSettings() {
-        val locationRequest = LocationRequest.Builder(
+        locationRequest = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
             5000L // Interval in milliseconds
         ).apply {
@@ -153,45 +131,64 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val builder = LocationSettingsRequest.Builder()
             .addLocationRequest(locationRequest)
-            .setAlwaysShow(true) // Show the dialog even if location settings are off
+            .setAlwaysShow(true) // Show the dialog only if location settings are off
 
         val settingsClient: SettingsClient = LocationServices.getSettingsClient(this)
         val task: Task<LocationSettingsResponse> = settingsClient.checkLocationSettings(builder.build())
 
-        task.addOnSuccessListener { locationSettingsResponse ->
-            // All location settings are satisfied. Fetch the location.
-            fetchCustomerLocation { customerLocation ->
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(customerLocation, 15f))
-                if (destinationMarker == null) {
-                    destinationMarker = mMap.addMarker(MarkerOptions().position(customerLocation).title("Your Location"))
-                }
-            }
+        task.addOnSuccessListener {
+            // All location settings are satisfied. Fetch the customer's location.
+            fetchCustomerLocation()
         }
 
         task.addOnFailureListener { exception ->
             if (exception is ResolvableApiException) {
-                // Location settings are not satisfied, but this can be fixed by showing the user a dialog.
                 try {
                     exception.startResolutionForResult(this@CustomerActivity, REQUEST_CHECK_SETTINGS)
                 } catch (sendEx: IntentSender.SendIntentException) {
-                    // Ignore the error.
                     Toast.makeText(this, "Unable to resolve location settings.", Toast.LENGTH_SHORT).show()
                 }
             } else {
-                // Show a message to the user that they need to enable location services.
                 Toast.makeText(this, "Please enable location services to continue.", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    private fun getApiKeyFromManifest(): String {
+        try {
+            val applicationInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+            val bundle = applicationInfo.metaData
+            return bundle.getString("com.google.android.geo.API_KEY") ?: ""
+        } catch (e: PackageManager.NameNotFoundException) {
+            Log.e(TAG, "Failed to load API key from manifest", e)
+            return ""
+        }
+    }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         when (requestCode) {
             REQUEST_LOCATION_PERMISSIONS_CODE -> {
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    // Permission granted, check if location settings are enabled
+                    // Permission granted, enable MyLocation layer and check settings
+                    if (::mMap.isInitialized) {
+                        if (ActivityCompat.checkSelfPermission(
+                                this,
+                                Manifest.permission.ACCESS_FINE_LOCATION
+                            ) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
+                                this,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            ) == PackageManager.PERMISSION_GRANTED
+                        ) {
+                            mMap.isMyLocationEnabled = true
+                        }
+                    }
+                    // Check if location settings are enabled
                     checkLocationSettings()
                 } else {
                     // Permission denied, show a message to the user
@@ -208,18 +205,72 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
             when (resultCode) {
                 Activity.RESULT_OK -> {
                     // User agreed to make required location settings changes
-                    fetchCustomerLocation { customerLocation ->
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(customerLocation, 15f))
-                        if (destinationMarker == null) {
-                            destinationMarker = mMap.addMarker(MarkerOptions().position(customerLocation).title("Your Location"))
-                        }
-                    }
+                    fetchCustomerLocation()
                 }
                 Activity.RESULT_CANCELED -> {
                     // User chose not to make required location settings changes
                     Toast.makeText(this, "Location services are necessary for this feature.", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+    }
+
+    private fun fetchCustomerLocation(retryCount: Int = 0, maxRetries: Int = 5) {
+        println("FETCHING LOCATION - Attempt: ${retryCount + 1}")
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            try {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    if (location != null && location.accuracy <= 30) {
+                        println("Location fetched successfully with accuracy: ${location.accuracy}")
+                        val customerLatLng = LatLng(location.latitude, location.longitude)
+                        // Update the destination marker and stop further location updates
+                        updateDestinationMarker(customerLatLng)
+                    } else {
+                        println("Location is either null or accuracy is above 30 meters")
+                        handleLocationRetry(retryCount, maxRetries)
+                    }
+                }.addOnFailureListener { exception ->
+                    println("Failed to fetch location: ${exception.message}")
+                    handleLocationRetry(retryCount, maxRetries)
+                }
+            } catch (e: Exception) {
+                println("Error while fetching location: ${e.message}")
+                handleLocationRetry(retryCount, maxRetries)
+            }
+        } else {
+            println("Location permission not granted")
+        }
+    }
+
+    private fun handleLocationRetry(retryCount: Int, maxRetries: Int) {
+        if (retryCount < maxRetries) {
+            val delay = 2000L * (retryCount + 1) // Exponential backoff
+            println("Retrying to fetch location in ${delay / 1000} seconds... (Attempt ${retryCount + 1})")
+            Handler(Looper.getMainLooper()).postDelayed({
+                fetchCustomerLocation(retryCount + 1, maxRetries)
+            }, delay)
+        } else {
+            println("Max retries reached. Unable to determine location.")
+            Toast.makeText(this, "Unable to determine location. Please try again later.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun updateDestinationMarker(customerLatLng: LatLng) {
+        if (::mMap.isInitialized) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(customerLatLng, 15f))
+            if (destinationMarker == null) {
+                destinationMarker = mMap.addMarker(
+                    MarkerOptions()
+                        .position(customerLatLng)
+                        .title("Your Location")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                )
+            } else {
+                destinationMarker?.position = customerLatLng
+            }
+        } else {
+            Toast.makeText(this, "Map is not initialized yet.", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -230,12 +281,8 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
         handler = Handler(Looper.getMainLooper())
         runnable = object : Runnable {
             override fun run() {
-                // Fetch the origin from the server or use dummy data based on the flag
-                if (useDummyData) {
-                    fetchDummyOriginAndDrawRoute(destinationMarker?.position ?: LatLng(0.0, 0.0))
-                } else {
-                    fetchOriginAndDrawRoute(destinationMarker?.position ?: LatLng(0.0, 0.0))
-                }
+                // Fetch the driver's location from the server and draw the route
+                fetchOriginAndDrawRoute()
 
                 // Schedule the next update
                 handler.postDelayed(this, 5000) // Update every 5 seconds
@@ -251,46 +298,27 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun fetchCustomerLocation(onLocationRetrieved: (LatLng) -> Unit) {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                if (location != null && location.accuracy <= 30) {
-                    println("Accuracy: " + location.accuracy)
-                    val customerLatLng = LatLng(location.latitude, location.longitude)
-                    // Update the destination marker
-                    if (destinationMarker == null) {
-                        destinationMarker = mMap.addMarker(MarkerOptions().position(customerLatLng).title("Your Location"))
-                    } else {
-                        destinationMarker?.position = customerLatLng
-                    }
-                    onLocationRetrieved(customerLatLng)
-                } else {
-                    println("Accuracy above 30")
-                    // Retry fetching the location after a short delay
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        fetchCustomerLocation(onLocationRetrieved)
-                    }, 2000) // Retry every 2 seconds
-                }
-            }
-        }
-    }
-
-    private fun fetchOriginAndDrawRoute(destination: LatLng) {
+    private fun fetchOriginAndDrawRoute() {
         val userId = "3" // Use stored userId
-        val token = OfflineStorageService.getToken(applicationContext)
+        val token = "Bearer ${OfflineStorageService.getToken(applicationContext)}"
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = NetworkClient.apiService.postRequest("/api/location/retrieve", mapOf("userId" to userId), "Bearer $token")
+                val response = NetworkClient.apiService.postRequest(
+                    "/api/location/retrieve",
+                    mapOf("userId" to userId),
+                    token
+                )
                 if (response.isSuccessful) {
                     val responseData = response.body()
                     val originLat = responseData?.latitude ?: 0.0
                     val originLng = responseData?.longitude ?: 0.0
                     val origin = LatLng(originLat, originLng)
 
-                    // Draw route on the main thread
+                    // Draw route and update driver's marker on the main thread
                     withContext(Dispatchers.Main) {
-                        drawRoute(origin, destination)
+                        updateOriginMarker(origin)
+                        drawRoute(origin)
                     }
                 } else {
                     Log.e(TAG, "Failed to retrieve location: ${response.errorBody()?.string()}")
@@ -303,22 +331,35 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun fetchDummyOriginAndDrawRoute(destination: LatLng) {
-        // Use dummy data for the origin
-        val origin = dummyOriginPoints[currentDummyIndex]
-        currentDummyIndex = (currentDummyIndex + 1) % dummyOriginPoints.size
+    private fun updateOriginMarker(originLatLng: LatLng) {
+        if (::mMap.isInitialized) {
+            if (originMarker == null) {
+                originMarker = mMap.addMarker(
+                    MarkerOptions()
+                        .position(originLatLng)
+                        .title("Driver's Location")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                )
+            } else {
+                originMarker?.position = originLatLng
+            }
 
-        // Draw the route with dummy data
-        drawRoute(origin, destination)
+            // Optionally, move the camera to include both markers
+            if (destinationMarker != null) {
+                val bounds = LatLngBounds.Builder()
+                    .include(destinationMarker!!.position)
+                    .include(originLatLng)
+                    .build()
+                val padding = 100 // offset from edges of the map in pixels
+                mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding))
+            }
+        } else {
+            Toast.makeText(this, "Map is not initialized yet.", Toast.LENGTH_SHORT).show()
+        }
     }
 
-    private fun drawRoute(origin: LatLng, destination: LatLng) {
-        // Update the origin marker
-        if (originMarker == null) {
-            originMarker = mMap.addMarker(MarkerOptions().position(origin).title("Origin"))
-        } else {
-            originMarker?.position = origin
-        }
+    private fun drawRoute(origin: LatLng) {
+        val destination = destinationMarker?.position ?: return
 
         // Use Google Maps Directions API to get the route
         val directionsUrl = getDirectionsUrl(origin, destination)
@@ -337,7 +378,12 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     withContext(Dispatchers.Main) {
                         // Draw the polyline on the map
-                        val newPolyline = mMap.addPolyline(PolylineOptions().addAll(decodedPath))
+                        val newPolyline = mMap.addPolyline(
+                            PolylineOptions()
+                                .addAll(decodedPath)
+                                .color(ContextCompat.getColor(this@CustomerActivity, R.color.teal_700))
+                                .width(10f)
+                        )
 
                         // Remove the old polyline if exists after the new one is drawn
                         currentPolyline?.remove()

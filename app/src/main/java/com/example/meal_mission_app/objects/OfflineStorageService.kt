@@ -9,6 +9,7 @@ object OfflineStorageService {
     private const val TOKEN_KEY = "token"
     private const val REFRESH_TOKEN_KEY = "refresh_token"
     private const val USER_ID_KEY = "user_id"
+    private const val LOCATION_TASK_ID_KEY = "location_task_id"
 
     private fun getPreferences(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
@@ -37,6 +38,25 @@ object OfflineStorageService {
     fun clearCredentials(context: Context) {
         val editor = getPreferences(context).edit()
         editor.clear()
+        editor.apply()
+    }
+
+    // Save location task ID
+    fun saveLocationTaskId(context: Context, taskId: String) {
+        val editor = getPreferences(context).edit()
+        editor.putString(LOCATION_TASK_ID_KEY, taskId)
+        editor.apply()
+    }
+
+    // Retrieve location task ID
+    fun getLocationTaskId(context: Context): String? {
+        return getPreferences(context).getString(LOCATION_TASK_ID_KEY, null)
+    }
+
+    // Clear location task ID
+    fun clearLocationTaskId(context: Context) {
+        val editor = getPreferences(context).edit()
+        editor.remove(LOCATION_TASK_ID_KEY)
         editor.apply()
     }
 }

@@ -63,11 +63,10 @@
 
         </activity>
 
-        <!-- Location Service Declaration -->
-<!--        <service-->
-<!--            android:name=".services.LocationService"-->
-<!--            android:foregroundServiceType="location"-->
-<!--            android:exported="false" />-->
+        <service
+            android:name=".services.LocationForegroundService"
+            android:foregroundServiceType="location"
+            android:exported="false" />
 
     </application>
 

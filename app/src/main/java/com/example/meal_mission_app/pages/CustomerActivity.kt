@@ -245,7 +245,7 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
                 originMarker?.position = originLatLng
             }
 
-            // Optionally, move the camera to include both markers
+            // move the camera to include both markers
             if (destinationMarker != null) {
                 val bounds = LatLngBounds.Builder()
                     .include(destinationMarker!!.position)

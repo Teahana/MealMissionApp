@@ -3,24 +3,84 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="#FFFFFF"> <!-- Set background color -->
 
+    <!-- Header Part for Image Logo -->
+    <ImageView
+        android:id="@+id/logo_image"
+        android:layout_width="179dp"
+        android:layout_height="179dp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="Logo"
+        android:src="@drawable/logo" />
+
+    <!-- Big Label for Meal Mission -->
+    <TextView
+        android:id="@+id/meal_mission_label"
+        android:layout_width="365dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:text="Meal Mission"
+        android:textSize="32sp"
+        android:textStyle="bold" />
+
+    <!-- Label for Username -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Username"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"/>
+
+    <!-- Username EditText styled like a default HTML text box -->
     <EditText
         android:id="@+id/username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Username" />
+        android:hint="Enter your username"
+        android:fontFamily="sans-serif"
+        android:padding="10dp"
+        android:layout_marginBottom="16dp"
+        android:background="@android:drawable/editbox_background" />
 
+    <!-- Label for Password -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Password"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Password EditText styled like a default HTML text box -->
     <EditText
         android:id="@+id/password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Password"
-        android:inputType="textPassword" />
+        android:hint="Enter your password"
+        android:inputType="textPassword"
+        android:fontFamily="sans-serif"
+        android:padding="10dp"
+        android:layout_marginBottom="16dp"
+        android:background="@android:drawable/editbox_background" />
 
+    <!-- Login Button with rounded corners -->
     <Button
         android:id="@+id/login_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Login" />
+        android:text="Login"
+
+
+        android:layout_gravity="center_horizontal"
+        android:layout_marginHorizontal="60dp"
+        android:backgroundTint="#E8B86D"/>
+
+
+
 </LinearLayout>

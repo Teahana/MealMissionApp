@@ -1,0 +1,34 @@
+<?xml version ="1.0" encoding ="utf-8"?><!--  Learn More about how to use App Actions: https://developer.android.com/guide/actions/index.html -->
+<actions>
+    <!-- res/drawable/rounded_button.xml -->
+    <!-- res/drawable/rounded_button.xml -->
+    <?xml version="1.0" encoding="utf-8"?>
+
+    <shape xmlns:android="http://schemas.android.com/apk/res/android">
+        <solid /> <!-- Background color of the box -->
+        <stroke
+            android:width="2dp"
+            android:color="#E8B86D"/> <!-- Border color and width -->
+        <corners android:radius="8dp"/> <!-- Rounded corners -->
+        <padding
+            android:left="8dp"
+            android:top="8dp"
+            android:right="8dp"
+            android:bottom="8dp"/> <!-- Padding inside the box -->
+    </shape>
+    <!-- res/drawable/rounded_button.xml -->
+    <?xml version="1.0" encoding="utf-8"?>
+    <shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+        <solid /> /> <!-- Button background color -->
+
+        <corners android:radius="16dp" /> <!-- Adjust the radius to make the button corners rounded -->
+        <padding
+            android:left="8dp"
+            android:top="8dp"
+            android:right="8dp"
+            android:bottom="8dp"/> <!-- Padding inside the box -->
+    </shape>
+    <!-- res/drawable/rounded_button.xml -->
+
+</actions>

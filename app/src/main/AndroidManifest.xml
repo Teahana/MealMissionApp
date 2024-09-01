@@ -3,19 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Internet permission -->
-    <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- Location permissions -->
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- Location permissions -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-    <!-- Foreground service permission -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <!-- New permission for location-based foreground services in Android 14 -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> <!-- Foreground service permission -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> <!-- New permission for location-based foreground services in Android 14 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <application
-
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -25,11 +20,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Meal_Mission_App"
         tools:targetApi="31">
-
+        <meta-data
+            android:name="com.google.android.actions"
+            android:resource="@drawable/rounded_button" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCyNQXSZN-qOP__Xu15JCqPIQVQUHjZN5k"/>
-        <!-- Login Activity -->
+            android:value="AIzaSyCyNQXSZN-qOP__Xu15JCqPIQVQUHjZN5k" /> <!-- Login Activity -->
         <activity
             android:name=".pages.LoginActivity"
             android:exported="true"
@@ -37,37 +33,30 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <!-- Customer home pgae -->
+        </activity> <!-- Customer home pgae -->
         <activity
             android:name=".pages.CustomerActivity"
             android:exported="true"
             android:label="Customer"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-
-        <!-- Driver Home Page Activity -->
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" /> <!-- Driver Home Page Activity -->
         <activity
             android:name=".pages.DriverHomePageActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
-
-        <!-- Main Activity (If needed later) -->
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" /> <!-- Main Activity (If needed later) -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Meal_Mission_App">
-
-        </activity>
+            android:theme="@style/Theme.Meal_Mission_App"></activity>
 
         <service
             android:name=".services.LocationForegroundService"
-            android:foregroundServiceType="location"
-            android:exported="false" />
-
+            android:exported="false"
+            android:foregroundServiceType="location" />
     </application>
 
 </manifest>

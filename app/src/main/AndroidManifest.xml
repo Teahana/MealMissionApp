@@ -25,7 +25,7 @@
             android:resource="@drawable/rounded_button" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCyNQXSZN-qOP__Xu15JCqPIQVQUHjZN5k" /> <!-- Login Activity -->
+            android:value="AIzaSyCyNQXSZN-qOP__Xu15JCqPIQVQUHjZN5k" />
         <activity
             android:name=".pages.LoginActivity"
             android:exported="true"
@@ -36,22 +36,34 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Customer home pgae -->
+        </activity>
+        <!-- Customer home pgae -->
+
         <activity
             android:name=".pages.CustomerActivity"
             android:exported="true"
             android:label="Customer"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" /> <!-- Driver Home Page Activity -->
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".pages.CustomerHomepageActivity"
+            android:exported="true"
+            android:label="CustomerHomepage"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".pages.RestaurantDetailsActivity"
+            android:exported="true"
+            android:label="RestaurantDetails"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
             android:name=".pages.DriverHomePageActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" /> <!-- Main Activity (If needed later) -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.Meal_Mission_App"></activity>
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+<!--        <activity-->
+<!--            android:name=".MainActivity"-->
+<!--            android:exported="true"-->
+<!--            android:label="@string/app_name"-->
+<!--            android:theme="@style/Theme.Meal_Mission_App"></activity>-->
 
         <service
             android:name=".services.LocationForegroundService"

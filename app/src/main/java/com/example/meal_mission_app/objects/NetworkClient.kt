@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object NetworkClient {  // This is a singleton object
 
-    private const val BASE_URL = "https://mealsmission.com"
+    private const val BASE_URL = "https://localhost"
 
     // Lazy initialization of Retrofit
     private val retrofit: Retrofit by lazy {

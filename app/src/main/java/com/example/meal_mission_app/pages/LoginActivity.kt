@@ -70,7 +70,7 @@ class LoginActivity : AppCompatActivity() {
                             }
                             "CUSTOMER" -> {
                                 Log.i(TAG, "Navigating to Customer Page") // Log navigation
-                                startActivity(Intent(this@LoginActivity, CustomerActivity::class.java))
+                                startActivity(Intent(this@LoginActivity, CustomerHomepageActivity::class.java))
                             }
                             else -> {
                                 Log.w(TAG, "Unknown user type: $userType") // Log unexpected user type

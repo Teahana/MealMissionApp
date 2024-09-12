@@ -40,22 +40,42 @@
         <!-- Customer home pgae -->
 
         <activity
-            android:name=".pages.CustomerActivity"
+            android:name=".pages.customer.CustomerActivity"
             android:exported="true"
             android:label="Customer"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
-            android:name=".pages.CustomerHomepageActivity"
+            android:name=".pages.customer.CustomerHomepageActivity"
             android:exported="true"
             android:label="CustomerHomepage"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
-            android:name=".pages.RestaurantDetailsActivity"
+            android:name=".pages.customer.RestaurantDetailsActivity"
             android:exported="true"
             android:label="RestaurantDetails"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+        <activity
+            android:name=".pages.driver.DriverHomePageActivity"
+            android:exported="true"
+            android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
-            android:name=".pages.DriverHomePageActivity"
+            android:name=".pages.driver.DriverOrderDetailsActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".pages.driver.DriverOrderListActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".pages.restaurant.OrderListActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".pages.restaurant.OrderDetailsActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />

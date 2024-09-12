@@ -1,7 +1,6 @@
-package com.example.meal_mission_app.pages
+package com.example.meal_mission_app.pages.driver
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager

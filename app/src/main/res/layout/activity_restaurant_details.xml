@@ -77,4 +77,22 @@
         android:layout_weight="1"
         android:layout_marginTop="8dp" />
 
+    <!-- TextView to display the total price -->
+    <TextView
+        android:id="@+id/totalPriceTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Total Price: $0.00"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp" />
+
+    <!-- Button to submit the order -->
+    <Button
+        android:id="@+id/submitOrderButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Submit Order"
+        android:layout_marginTop="16dp" />
+
 </LinearLayout>

@@ -1,13 +1,20 @@
 package com.example.meal_mission_app.services;
 
 import com.example.meal_mission_app.DTO.LoginResponse
-import com.example.meal_mission_app.DTO.RestaurantDetailResponse
 import com.example.meal_mission_app.DTO.RestaurantResponse
+import com.example.meal_mission_app.pages.customer.RestaurantDetailResponse
+import com.example.meal_mission_app.pages.restaurant.CustomerLiveOrder
+import com.example.meal_mission_app.pages.restaurant.CustomerOrderDto
+import com.example.meal_mission_app.pages.restaurant.CustomerOrderResponse
+import com.example.meal_mission_app.pages.restaurant.StatusUpdateResponse
+import com.google.android.gms.common.internal.Objects
+import com.google.gson.JsonObject
 import retrofit2.Response;
 import retrofit2.http.Body;
 import retrofit2.http.GET
 import retrofit2.http.Header;
 import retrofit2.http.POST;
+import retrofit2.http.Path
 import retrofit2.http.Url;
 
 interface ApiService {
@@ -29,5 +36,40 @@ interface ApiService {
         @Body data: Map<String, String?>,
         @Header("Authorization") authToken: String? = null
     ): Response<RestaurantDetailResponse>
+
+    @POST("/api/getLiveOrders")
+    suspend fun getLiveOrders(
+       @Header("Authorization") authToken: String,
+       @Body requestBody: Map<String, String?>
+    ): Response<List<CustomerLiveOrder>>
+
+    @POST("/api/getOrderDetails/")
+    suspend fun getOrderDetails(
+        @Body requestBody: Map<String, String?>,
+        @Header("Authorization") authToken: String
+    ): Response<CustomerOrderDto>
+
+    @POST("/api/orderStatusUpdateAccept")
+    suspend fun updateOrderStatus(
+        @Body requestBody: JsonObject,
+        @Header("Authorization") authToken: String
+    ): Response<StatusUpdateResponse>
+
+    @POST("/api/updateOrderStatusReady")
+    suspend fun updateOrderStatusReady(
+        @Body requestBody: JsonObject,
+        @Header("Authorization") authToken: String
+    ): Response<StatusUpdateResponse>
+
+    @POST("/api/submitOrder")
+    suspend fun submitOrder(
+        @Body requestBody: MutableMap<String,Any>,
+        @Header("Authorization") authToken: String
+    ): Response<StatusUpdateResponse>
+
+    @POST("/api/test/getReadyOrders")
+    suspend fun getReadyOrders(
+        @Header("Authorization") authToken: String
+    ): Response<List<CustomerLiveOrder>>
 }
 

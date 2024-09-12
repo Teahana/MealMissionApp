@@ -1,7 +1,11 @@
-package com.example.meal_mission_app.pages
+package com.example.meal_mission_app.pages.customer
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
@@ -9,10 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.meal_mission_app.DTO.RestaurantResponse
 import com.example.meal_mission_app.R
-import com.example.meal_mission_app.helper.RestaurantAdapter
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
-import com.example.meal_mission_app.pages.RestaurantDetailsActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -92,4 +94,42 @@ class CustomerHomepageActivity : AppCompatActivity() {
         startActivity(intent)
     }
 }
+class RestaurantAdapter(
+    var restaurants: List<RestaurantResponse>,
+    private val onItemClick: (RestaurantResponse) -> Unit
+) : RecyclerView.Adapter<RestaurantAdapter.RestaurantViewHolder>() {
 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RestaurantViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_restaurant, parent, false)
+        return RestaurantViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: RestaurantViewHolder, position: Int) {
+        val restaurant = restaurants[position]
+        holder.bind(restaurant)
+        holder.itemView.setOnClickListener {
+            onItemClick(restaurant)
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return restaurants.size
+    }
+
+    fun updateRestaurants(newRestaurants: List<RestaurantResponse>) {
+        this.restaurants = newRestaurants
+        notifyDataSetChanged()
+    }
+
+    class RestaurantViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        private val nameTextView: TextView = view.findViewById(R.id.restaurantName)
+        private val descriptionTextView: TextView = view.findViewById(R.id.restaurantDescription)
+        private val addressTextView: TextView = view.findViewById(R.id.restaurantAddress)
+
+        fun bind(restaurant: RestaurantResponse) {
+            nameTextView.text = restaurant.name
+            descriptionTextView.text = restaurant.description
+            addressTextView.text = restaurant.address
+        }
+    }
+}

@@ -1,4 +1,4 @@
-package com.example.meal_mission_app.pages
+package com.example.meal_mission_app.pages.customer
 
 import android.Manifest
 import android.content.ContentValues.TAG

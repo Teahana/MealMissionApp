@@ -80,6 +80,9 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:18.0.2")
     implementation("com.google.maps.android:android-maps-utils:2.2.0") // For polyline decoding
     implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.cardview:cardview:1.0.0")
+    implementation("com.google.code.gson:gson:2.8.9")
 
 
 

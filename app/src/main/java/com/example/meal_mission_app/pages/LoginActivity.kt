@@ -15,6 +15,9 @@ import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import android.util.Log
 import android.widget.Toast
+import com.example.meal_mission_app.pages.customer.CustomerHomepageActivity
+import com.example.meal_mission_app.pages.driver.DriverHomePageActivity
+import com.example.meal_mission_app.pages.restaurant.OrderListActivity
 
 class LoginActivity : AppCompatActivity() {
 
@@ -67,6 +70,10 @@ class LoginActivity : AppCompatActivity() {
                             "DRIVER" -> {
                                 Log.i(TAG, "Navigating to Driver Home Page") // Log navigation
                                 startActivity(Intent(this@LoginActivity, DriverHomePageActivity::class.java))
+                            }
+                            "RESTAURANT" -> {
+                                Log.i(TAG, "Navigating to Restaurant Home Page") // Log navigation
+                                startActivity(Intent(this@LoginActivity, OrderListActivity::class.java))
                             }
                             "CUSTOMER" -> {
                                 Log.i(TAG, "Navigating to Customer Page") // Log navigation

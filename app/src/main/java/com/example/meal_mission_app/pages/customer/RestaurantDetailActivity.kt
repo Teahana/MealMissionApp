@@ -1,5 +1,6 @@
 package com.example.meal_mission_app.pages.customer
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -10,22 +11,27 @@ import android.widget.LinearLayout
 import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.meal_mission_app.R
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
+import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class RestaurantDetailsActivity : AppCompatActivity() {
     private lateinit var selectedItems: MutableList<Pair<ItemResponse, Int>>
     private lateinit var selectedMeals: MutableList<Pair<MealResponse, Int>>
     private lateinit var totalPriceTextView: TextView
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_restaurant_details)
@@ -62,6 +68,7 @@ class RestaurantDetailsActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchRestaurantDetails(restaurantId: Long) {
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
 
@@ -150,6 +157,7 @@ class RestaurantDetailsActivity : AppCompatActivity() {
         totalPriceTextView.text = "Total Price: $$totalPrice"
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun submitOrder() {
         val customerId = OfflineStorageService.getUserId(this)
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
@@ -178,6 +186,11 @@ class RestaurantDetailsActivity : AppCompatActivity() {
         println("Customer ID: $customerId")
         println("Items: $itemsList")
         println("Meals: $mealsList")
+        println(orderDetails.toString())
+//        val gson = Gson()
+//        val json = gson.toJson(orderDetails)  // Properly convert the map to JSON string
+//        val requestBody = json.toRequestBody("application/json".toMediaType())
+     //   return;
         // Post the order details to the API
         CoroutineScope(Dispatchers.IO).launch {
             try {

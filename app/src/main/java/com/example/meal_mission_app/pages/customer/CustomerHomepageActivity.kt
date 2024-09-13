@@ -1,5 +1,6 @@
 package com.example.meal_mission_app.pages.customer
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,6 +29,7 @@ class CustomerHomepageActivity : AppCompatActivity() {
     private lateinit var searchBar: EditText
     private var allRestaurants: List<RestaurantResponse> = listOf()  // Store the original list
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_customer_homepage)
@@ -49,6 +52,7 @@ class CustomerHomepageActivity : AppCompatActivity() {
         fetchRestaurants()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchRestaurants() {
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
 

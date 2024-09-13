@@ -19,10 +19,10 @@ class DriverOrderListActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var orderAdapter: OrderAdapter
-    private val orders: MutableList<CustomerLiveOrder> = mutableListOf()
-
+    private val orders = mutableListOf<CustomerLiveOrder>()
     private var pollingJob: Job? = null
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_order_list)  // Reuse the same XML
@@ -39,11 +39,22 @@ class DriverOrderListActivity : AppCompatActivity() {
         startPolling()
     }
 
+    override fun onStop() {
+        super.onStop()
+        pollingJob?.cancel()  // Cancel the polling when the app goes to the background
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onResume() {
+        super.onResume()
+        startPolling()  // Restart the polling when the app comes back to the foreground
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun startPolling() {
         pollingJob = CoroutineScope(Dispatchers.Default).launch {
             while (isActive) {
-                fetchDriverOrders()  // Different endpoint for driver
+                fetchDriverOrders()  // Fetch from the driver-specific endpoint
                 delay(10000)  // Polling every 10 seconds
             }
         }
@@ -57,7 +68,9 @@ class DriverOrderListActivity : AppCompatActivity() {
             val response = NetworkClient.apiService.getReadyOrders(token)  // Call the driver-specific endpoint
             if (response.isSuccessful) {
                 val newOrders = response.body() ?: emptyList()
-                updateOrders(newOrders)
+                withContext(Dispatchers.Main) {
+                    updateOrders(newOrders)
+                }
             } else {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@DriverOrderListActivity, "Failed to fetch driver orders", Toast.LENGTH_SHORT).show()
@@ -72,13 +85,19 @@ class DriverOrderListActivity : AppCompatActivity() {
     }
 
     private fun updateOrders(newOrders: List<CustomerLiveOrder>) {
-        orders.clear()
-        orders.addAll(newOrders)
-        orderAdapter.notifyDataSetChanged()
+        val updatedOrders = newOrders.toMutableList()
+
+        if (updatedOrders != orders) {
+            orders.clear()
+            orders.addAll(updatedOrders)
+            CoroutineScope(Dispatchers.Main).launch {
+                orderAdapter.notifyDataSetChanged()
+            }
+        }
     }
 
-    override fun onStop() {
-        super.onStop()
-        pollingJob?.cancel()  // Stop polling when the activity is stopped
+    override fun onDestroy() {
+        super.onDestroy()
+        pollingJob?.cancel()
     }
 }

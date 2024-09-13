@@ -1,6 +1,7 @@
 package com.example.meal_mission_app.pages
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -15,8 +16,10 @@ import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import com.example.meal_mission_app.pages.customer.CustomerHomepageActivity
 import com.example.meal_mission_app.pages.driver.DriverHomePageActivity
+import com.example.meal_mission_app.pages.driver.DriverOrderListActivity
 import com.example.meal_mission_app.pages.restaurant.OrderListActivity
 
 class LoginActivity : AppCompatActivity() {
@@ -25,6 +28,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var passwordEditText: EditText
     private lateinit var loginButton: Button
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
@@ -40,6 +44,7 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun performLogin(username: String, password: String) {
         val loginData = mapOf("username" to username, "password" to password)
 
@@ -69,7 +74,7 @@ class LoginActivity : AppCompatActivity() {
                         when (userType) {
                             "DRIVER" -> {
                                 Log.i(TAG, "Navigating to Driver Home Page") // Log navigation
-                                startActivity(Intent(this@LoginActivity, DriverHomePageActivity::class.java))
+                                startActivity(Intent(this@LoginActivity, DriverOrderListActivity::class.java))
                             }
                             "RESTAURANT" -> {
                                 Log.i(TAG, "Navigating to Restaurant Home Page") // Log navigation

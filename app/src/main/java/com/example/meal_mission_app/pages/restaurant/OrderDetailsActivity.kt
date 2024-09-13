@@ -2,6 +2,7 @@ package com.example.meal_mission_app.pages.restaurant
 
 import android.os.Build
 import android.os.Bundle
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -97,7 +98,16 @@ class OrderDetailsActivity : AppCompatActivity() {
             }
         }
     }
-
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                // Navigate back to the previous screen
+                finish()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
     private fun displayOrderDetails(orderDetails: CustomerOrderDto) {
         textViewOrderId.text = "Order #${orderDetails.orderId}"
         textViewOrderStatus.text = orderDetails.status

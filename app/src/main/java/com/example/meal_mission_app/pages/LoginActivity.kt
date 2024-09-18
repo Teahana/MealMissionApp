@@ -67,7 +67,7 @@ class LoginActivity : AppCompatActivity() {
                     val userType = responseData?.userType
 
                     // Save tokens and userId to shared preferences or secure storage
-                    OfflineStorageService.saveCredentials(applicationContext, token, refreshToken, userId)
+                    OfflineStorageService.saveCredentials(applicationContext, token, refreshToken, userId,userType)
 
                     // Determine where to navigate based on userType
                     withContext(Dispatchers.Main) {

@@ -6,12 +6,14 @@ import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -36,8 +38,9 @@ import org.json.JSONObject
 import retrofit2.HttpException
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
+import com.example.meal_mission_app.pages.BaseActivity
 
-class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
+class CustomerActivity : BaseActivity(), OnMapReadyCallback {
 
     companion object {
         private const val REQUEST_LOCATION_PERMISSIONS_CODE = 1001
@@ -57,7 +60,8 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_customer)
+        // Inject the customer activity layout into the base activity's FrameLayout
+        layoutInflater.inflate(R.layout.activity_customer, findViewById(R.id.activity_content))
 
         apiKey = getApiKeyFromManifest()
         //backgroundService = BackgroundService(this)
@@ -184,6 +188,7 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun startFetchingDriverLocation() {
         handler.postDelayed(object : Runnable {
+            @RequiresApi(Build.VERSION_CODES.O)
             override fun run() {
                 Log.d(TAG, "Fetching driver's location from server")
                 fetchOriginAndDrawRoute()
@@ -197,6 +202,7 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
         handler.removeCallbacksAndMessages(null) // Stops the fetching process
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchOriginAndDrawRoute() {
         val userId = "3" // Use stored userId
         val token = "Bearer ${OfflineStorageService.getToken(applicationContext)}"
@@ -345,5 +351,8 @@ class CustomerActivity : AppCompatActivity(), OnMapReadyCallback {
             Log.e(TAG, "Failed to load API key from manifest", e)
             return ""
         }
+    }
+    override fun getSelectedItemId(): Int {
+        return R.id.nav_profile  // Ensure the "Profile" icon is highlighted in the bottom nav
     }
 }

@@ -43,7 +43,7 @@ interface ApiService {
        @Body requestBody: Map<String, String?>
     ): Response<List<CustomerLiveOrder>>
 
-    @POST("/api/getOrderDetails/")
+    @POST("/api/getOrderDetails")
     suspend fun getOrderDetails(
         @Body requestBody: Map<String, String?>,
         @Header("Authorization") authToken: String
@@ -67,7 +67,7 @@ interface ApiService {
         @Header("Authorization") authToken: String
     ): Response<StatusUpdateResponse>
 
-    @POST("/api/test/getReadyOrders")
+    @POST("/api/getReadyOrders")
     suspend fun getReadyOrders(
         @Header("Authorization") authToken: String
     ): Response<List<CustomerLiveOrder>>

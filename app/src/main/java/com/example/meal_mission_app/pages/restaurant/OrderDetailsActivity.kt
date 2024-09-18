@@ -38,7 +38,8 @@ class OrderDetailsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_order_details)
         initializeViews()
-
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
         orderId = intent.getLongExtra("ORDER_ID", -1L)
         if (orderId != -1L) {
             lifecycleScope.launch {

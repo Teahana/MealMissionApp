@@ -1,5 +1,6 @@
 package com.example.meal_mission_app.pages.customer
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -156,58 +157,30 @@ class RestaurantDetailsActivity : AppCompatActivity() {
         }
         totalPriceTextView.text = "Total Price: $$totalPrice"
     }
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun submitOrder() {
         val customerId = OfflineStorageService.getUserId(this)
-        val token = "Bearer ${OfflineStorageService.getToken(this)}"
         val restaurantId = intent.getLongExtra("restaurantId", -1)
 
-        // Adjusting items to match the DTO structure
+        // Adjusting items to match the structure to be passed to CartActivity
         val itemsList = selectedItems.map {
-            mapOf("itemId" to it.first.id, "quantity" to it.second)
+            CartItem(it.first.id, it.second)  // Using CartItem data class
         }
 
-        // Adjusting meals to match the DTO structure
+        // Adjusting meals to match the structure to be passed to CartActivity
         val mealsList = selectedMeals.map {
-            mapOf("mealId" to it.first.id, "quantity" to it.second)
+            CartMeal(it.first.id, it.second)  // Using CartMeal data class
         }
 
-        val orderDetails = mutableMapOf<String, Any>(
-            "restaurantId" to restaurantId,
-            "customerId" to customerId.toString(),
-            "items" to itemsList,
-            "meals" to mealsList
-        )
+        // Create intent to navigate to CartActivity
+        val intent = Intent(this, CartActivity::class.java)
+        intent.putParcelableArrayListExtra("cartItems", ArrayList(itemsList))  // Pass items list
+        intent.putParcelableArrayListExtra("cartMeals", ArrayList(mealsList))  // Pass meals list
+        intent.putExtra("restaurantId", restaurantId)  // Pass restaurant ID if needed
+        intent.putExtra("customerId", customerId.toString())  // Pass customer ID
 
-        // Print the order details to Logcat
-        println("Order Details: ")
-        println("Restaurant ID: $restaurantId")
-        println("Customer ID: $customerId")
-        println("Items: $itemsList")
-        println("Meals: $mealsList")
-        println(orderDetails.toString())
-//        val gson = Gson()
-//        val json = gson.toJson(orderDetails)  // Properly convert the map to JSON string
-//        val requestBody = json.toRequestBody("application/json".toMediaType())
-     //   return;
-        // Post the order details to the API
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = NetworkClient.apiService.submitOrder(orderDetails, token)
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        Toast.makeText(this@RestaurantDetailsActivity, "Order submitted successfully", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(this@RestaurantDetailsActivity, "Failed to submit order", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@RestaurantDetailsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
+        // Start CartActivity
+        startActivity(intent)
     }
 
 }
@@ -373,8 +346,26 @@ class ItemAdapter(
     }
 }
 
-
-
+data class Cart(
+    val offlineId: Long,
+    val restaurantName: String,
+    val items: List<ItemResponse>,
+    val meals: List<MealResponse>
+)
+data class OfflineCartItem(
+    val id: Long,
+    val quantity: Int,
+    val price: Double,
+    val name: String,
+    val description: String
+    )
+data class OfflineCartMeal(
+    val id: Long,
+    val quantity: Int,
+    val price: Double,
+    val name: String,
+    val description: String
+)
 data class RestaurantDetailResponse(
     val id: Long,
     val name: String,
@@ -400,3 +391,58 @@ data class ItemResponse(
     val description: String,
     val price: Double
 )
+
+
+
+//    @RequiresApi(Build.VERSION_CODES.O)
+//    private fun submitOrder() {
+//        val customerId = OfflineStorageService.getUserId(this)
+//        val token = "Bearer ${OfflineStorageService.getToken(this)}"
+//        val restaurantId = intent.getLongExtra("restaurantId", -1)
+//
+//        // Adjusting items to match the DTO structure
+//        val itemsList = selectedItems.map {
+//            mapOf("itemId" to it.first.id, "quantity" to it.second)
+//        }
+//
+//        // Adjusting meals to match the DTO structure
+//        val mealsList = selectedMeals.map {
+//            mapOf("mealId" to it.first.id, "quantity" to it.second)
+//        }
+//
+//        val orderDetails = mutableMapOf<String, Any>(
+//            "restaurantId" to restaurantId,
+//            "customerId" to customerId.toString(),
+//            "items" to itemsList,
+//            "meals" to mealsList
+//        )
+//
+//        // Print the order details to Logcat
+//        println("Order Details: ")
+//        println("Restaurant ID: $restaurantId")
+//        println("Customer ID: $customerId")
+//        println("Items: $itemsList")
+//        println("Meals: $mealsList")
+//        println(orderDetails.toString())
+////        val gson = Gson()
+////        val json = gson.toJson(orderDetails)  // Properly convert the map to JSON string
+////        val requestBody = json.toRequestBody("application/json".toMediaType())
+//     //   return;
+//        // Post the order details to the API
+//        CoroutineScope(Dispatchers.IO).launch {
+//            try {
+//                val response = NetworkClient.apiService.submitOrder(orderDetails, token)
+//                withContext(Dispatchers.Main) {
+//                    if (response.isSuccessful) {
+//                        Toast.makeText(this@RestaurantDetailsActivity, "Order submitted successfully", Toast.LENGTH_SHORT).show()
+//                    } else {
+//                        Toast.makeText(this@RestaurantDetailsActivity, "Failed to submit order", Toast.LENGTH_SHORT).show()
+//                    }
+//                }
+//            } catch (e: Exception) {
+//                withContext(Dispatchers.Main) {
+//                    Toast.makeText(this@RestaurantDetailsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+//                }
+//            }
+//        }
+//    }

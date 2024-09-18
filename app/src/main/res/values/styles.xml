@@ -1,0 +1,14 @@
+<resources>
+    <!-- Customize text appearance for active (selected) item -->
+    <style name="ActiveTextAppearance" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@android:color/white</item> <!-- Text color for active item -->
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Customize text appearance for inactive (unselected) item -->
+    <style name="InactiveTextAppearance" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@android:color/darker_gray</item> <!-- Text color for inactive item -->
+    </style>
+</resources>

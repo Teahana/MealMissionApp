@@ -10,6 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,12 +18,13 @@ import com.example.meal_mission_app.DTO.RestaurantResponse
 import com.example.meal_mission_app.R
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
+import com.example.meal_mission_app.pages.BaseActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class CustomerHomepageActivity : AppCompatActivity() {
+class CustomerHomepageActivity : BaseActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: RestaurantAdapter
@@ -32,14 +34,15 @@ class CustomerHomepageActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_customer_homepage)
+
+        // Inflate the specific layout for CustomerHomepageActivity into the base FrameLayout
+        layoutInflater.inflate(R.layout.activity_customer_homepage, findViewById(R.id.activity_content))
 
         recyclerView = findViewById(R.id.recyclerView)
         searchBar = findViewById(R.id.searchBar)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
         adapter = RestaurantAdapter(listOf()) { restaurant ->
-            // Handle click on restaurant
             openRestaurantDetails(restaurant)
         }
         recyclerView.adapter = adapter
@@ -62,7 +65,7 @@ class CustomerHomepageActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val restaurants = response.body() ?: emptyList()
                     withContext(Dispatchers.Main) {
-                        allRestaurants = restaurants  // Store the original list
+                        allRestaurants = restaurants
                         adapter.updateRestaurants(restaurants)
                     }
                 } else {
@@ -81,7 +84,7 @@ class CustomerHomepageActivity : AppCompatActivity() {
 
     private fun filterRestaurants(query: String) {
         val filteredList = if (query.isEmpty()) {
-            allRestaurants  // Show all restaurants when the search query is empty
+            allRestaurants
         } else {
             allRestaurants.filter { it.name.contains(query, ignoreCase = true) }
         }
@@ -94,8 +97,11 @@ class CustomerHomepageActivity : AppCompatActivity() {
         intent.putExtra("restaurantDescription", restaurant.description)
         intent.putExtra("restaurantAddress", restaurant.address)
         intent.putExtra("restaurantId", restaurant.id)
-        println("Restaurant ID before starting intent: " +  restaurant.id)
         startActivity(intent)
+    }
+
+    override fun getSelectedItemId(): Int {
+        return R.id.nav_home  // Indicate that this is the Home page
     }
 }
 class RestaurantAdapter(
@@ -104,7 +110,7 @@ class RestaurantAdapter(
 ) : RecyclerView.Adapter<RestaurantAdapter.RestaurantViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RestaurantViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_restaurant, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.restaurant_list, parent, false)
         return RestaurantViewHolder(view)
     }
 

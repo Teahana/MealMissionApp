@@ -50,6 +50,16 @@
             android:label="CustomerHomepage"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
+            android:name=".pages.customer.CartActivity"
+            android:exported="true"
+            android:label="CustomerHomepage"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+        <activity
+            android:name=".pages.customer.PaymentActivity"
+            android:exported="true"
+            android:label="CustomerHomepage"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
             android:name=".pages.customer.RestaurantDetailsActivity"
             android:exported="true"
             android:label="RestaurantDetails"

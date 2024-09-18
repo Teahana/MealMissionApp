@@ -2,6 +2,9 @@ package com.example.meal_mission_app.objects
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.meal_mission_app.pages.customer.Cart
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 object OfflineStorageService {
 
@@ -11,6 +14,7 @@ object OfflineStorageService {
     private const val USER_ID_KEY = "user_id"
     private const val USER_TYPE = "user_type";
     private const val LOCATION_TASK_ID_KEY = "location_task_id"
+    private const val CART_LIST_KEY = "cart"
 
     private fun getPreferences(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
@@ -24,6 +28,46 @@ object OfflineStorageService {
         editor.putString(USER_TYPE,userType)
         editor.apply()
     }
+    // Save the new cart into a list of carts
+    fun saveCart(context: Context, newCart: Cart) {
+        val editor = getPreferences(context).edit()
+
+        // Retrieve the current list of carts
+        val existingCartsJson = getPreferences(context).getString(CART_LIST_KEY, null)
+        val cartList: MutableList<Cart> = if (existingCartsJson != null) {
+            Gson().fromJson(existingCartsJson, object : TypeToken<MutableList<Cart>>() {}.type)
+        } else {
+            mutableListOf()
+        }
+
+        // Add the new cart to the list
+        cartList.add(newCart)
+
+        // Serialize the updated list back to JSON
+        val updatedCartListJson = Gson().toJson(cartList)
+
+        // Save the updated list in SharedPreferences
+        editor.putString(CART_LIST_KEY, updatedCartListJson)
+        editor.apply()
+    }
+
+    // Retrieve the list of carts
+    fun getCartList(context: Context): List<Cart> {
+        val cartListJson = getPreferences(context).getString(CART_LIST_KEY, null)
+        return if (cartListJson != null) {
+            Gson().fromJson(cartListJson, object : TypeToken<List<Cart>>() {}.type)
+        } else {
+            emptyList()  // Return an empty list if no cart data is found
+        }
+    }
+
+    // Clear the list of carts from SharedPreferences
+    fun clearCartList(context: Context) {
+        val editor = getPreferences(context).edit()
+        editor.remove(CART_LIST_KEY)  // Remove the entire cart list from SharedPreferences
+        editor.apply()
+    }
+
 
     fun getToken(context: Context): String? {
         return getPreferences(context).getString(TOKEN_KEY, null)

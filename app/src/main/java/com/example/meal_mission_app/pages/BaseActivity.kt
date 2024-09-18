@@ -7,6 +7,7 @@ import com.example.meal_mission_app.R
 import com.example.meal_mission_app.pages.customer.CartActivity
 import com.example.meal_mission_app.pages.customer.CustomerActivity
 import com.example.meal_mission_app.pages.customer.CustomerHomepageActivity
+import com.example.meal_mission_app.pages.customer.RestaurantDetailsActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 open class BaseActivity : AppCompatActivity() {
@@ -22,28 +23,36 @@ open class BaseActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.nav_home -> {
                     if (this !is CustomerHomepageActivity) {
-                        startActivity(Intent(this, CustomerHomepageActivity::class.java))
+                        val intent = Intent(this, CustomerHomepageActivity::class.java)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        startActivity(intent)
                         finish()
                     }
                     true
                 }
                 R.id.nav_cart -> {
                     if (this !is CartActivity) {
-                        startActivity(Intent(this, CartActivity::class.java))
+                        val intent = Intent(this, CartActivity::class.java)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        startActivity(intent)
                         finish()
                     }
                     true
                 }
-                R.id.nav_orders -> {
-                    if (this !is CartActivity) {
-                        startActivity(Intent(this, CartActivity::class.java))
-                        finish()
-                    }
-                    true
-                }
+//                R.id.nav_orders -> {
+//                    if (this !is RestaurantDetailsActivity) {
+//                        val intent = Intent(this, RestaurantDetailsActivity::class.java)
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+//                        startActivity(intent)
+//                        finish()
+//                    }
+//                    true
+//                }
                 R.id.nav_profile -> {
                     if (this !is CustomerActivity) {
-                        startActivity(Intent(this, CustomerActivity::class.java))
+                        val intent = Intent(this, CustomerActivity::class.java)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        startActivity(intent)
                         finish()
                     }
                     true

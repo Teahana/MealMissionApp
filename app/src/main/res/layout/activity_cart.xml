@@ -1,30 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Cart Items and Meals RecyclerView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewCart"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Map Fragment for user to select location -->
-    <fragment
-        android:id="@+id/mapFragment"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Proceed to payment button -->
-    <Button
-        android:id="@+id/btnProceedToPayment"
+    <TextView
+        android:id="@+id/cartTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Proceed to Payment" />
+        android:textSize="16sp"
+        android:textColor="@android:color/black" />
 
 </LinearLayout>
+
+
+
+
+    <!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--    android:layout_width="match_parent"-->
+    <!--    android:layout_height="match_parent"-->
+    <!--    android:orientation="vertical"-->
+    <!--    android:padding="16dp">-->
+
+    <!--    &lt;!&ndash; Cart Items and Meals RecyclerView &ndash;&gt;-->
+    <!--    <androidx.recyclerview.widget.RecyclerView-->
+    <!--        android:id="@+id/recyclerViewCart"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="0dp"-->
+    <!--        android:layout_weight="1"-->
+    <!--        android:layout_marginBottom="16dp" />-->
+
+    <!--    &lt;!&ndash; Map Fragment for user to select location &ndash;&gt;-->
+    <!--    <fragment-->
+    <!--        android:id="@+id/mapFragment"-->
+    <!--        android:name="com.google.android.gms.maps.SupportMapFragment"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="200dp"-->
+    <!--        android:layout_marginBottom="16dp" />-->
+
+    <!--    &lt;!&ndash; Proceed to payment button &ndash;&gt;-->
+    <!--    <Button-->
+    <!--        android:id="@+id/btnProceedToPayment"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:text="Proceed to Payment" />-->
+
+    <!--</LinearLayout>-->

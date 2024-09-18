@@ -53,7 +53,7 @@ class RestaurantDetailsActivity : AppCompatActivity() {
 
         val submitOrderButton: Button = findViewById(R.id.submitOrderButton)
         submitOrderButton.setOnClickListener {
-            submitOrder()
+            saveCart()
         }
     }
 
@@ -65,6 +65,7 @@ class RestaurantDetailsActivity : AppCompatActivity() {
                 finish()
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -86,18 +87,30 @@ class RestaurantDetailsActivity : AppCompatActivity() {
                         if (restaurantDetails != null) {
                             displayRestaurantDetails(restaurantDetails)
                         } else {
-                            Toast.makeText(this@RestaurantDetailsActivity, "Failed to load restaurant details", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@RestaurantDetailsActivity,
+                                "Failed to load restaurant details",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(this@RestaurantDetailsActivity, "Failed to fetch restaurant details", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@RestaurantDetailsActivity,
+                            "Failed to fetch restaurant details",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             } catch (e: Exception) {
                 println("Error: " + e.message)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@RestaurantDetailsActivity, "Error fetching restaurant details", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@RestaurantDetailsActivity,
+                        "Error fetching restaurant details",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -126,6 +139,7 @@ class RestaurantDetailsActivity : AppCompatActivity() {
             handleMealRemoval(meal)
         })
     }
+
     private fun handleMealSelection(meal: MealResponse, quantity: Int) {
         selectedMeals.removeIf { it.first.id == meal.id }  // Remove the meal if it already exists
         selectedMeals.add(Pair(meal, quantity))  // Add the updated quantity
@@ -136,6 +150,7 @@ class RestaurantDetailsActivity : AppCompatActivity() {
         selectedMeals.removeIf { it.first.id == meal.id }  // Remove the meal from selected meals
         calculateTotalPrice()
     }
+
     private fun handleItemSelection(item: ItemResponse, quantity: Int) {
         selectedItems.removeIf { it.first.id == item.id }  // Remove the item if it already exists
         selectedItems.add(Pair(item, quantity))  // Add the updated quantity
@@ -157,33 +172,58 @@ class RestaurantDetailsActivity : AppCompatActivity() {
         }
         totalPriceTextView.text = "Total Price: $$totalPrice"
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun submitOrder() {
+    private fun saveCart() {
         val customerId = OfflineStorageService.getUserId(this)
         val restaurantId = intent.getLongExtra("restaurantId", -1)
 
-        // Adjusting items to match the structure to be passed to CartActivity
+        // Prepare the cart items and meals
         val itemsList = selectedItems.map {
-            CartItem(it.first.id, it.second)  // Using CartItem data class
+            OfflineCartItem(
+                it.first.id,
+                it.second,
+                it.first.price,
+                it.first.name,
+                it.first.description
+            )
         }
 
-        // Adjusting meals to match the structure to be passed to CartActivity
         val mealsList = selectedMeals.map {
-            CartMeal(it.first.id, it.second)  // Using CartMeal data class
+            OfflineCartMeal(
+                it.first.id,
+                it.second,
+                it.first.price,
+                it.first.name,
+                it.first.description
+            )
         }
 
-        // Create intent to navigate to CartActivity
-        val intent = Intent(this, CartActivity::class.java)
-        intent.putParcelableArrayListExtra("cartItems", ArrayList(itemsList))  // Pass items list
-        intent.putParcelableArrayListExtra("cartMeals", ArrayList(mealsList))  // Pass meals list
-        intent.putExtra("restaurantId", restaurantId)  // Pass restaurant ID if needed
-        intent.putExtra("customerId", customerId.toString())  // Pass customer ID
+        // Calculate total price
+        val totalPrice =
+            itemsList.sumOf { it.price * it.quantity } + mealsList.sumOf { it.price * it.quantity }
 
-        // Start CartActivity
+        // Create the Cart object
+        val cart = Cart(
+            restaurantId,
+            findViewById<TextView>(R.id.restaurantName).text.toString(),
+            itemsList,
+            mealsList,
+            totalPrice
+        )
+
+        // Save the cart to SharedPreferences (as part of the list)
+        OfflineStorageService.saveCart(this, cart)
+
+        // Notify user and redirect to CartActivity
+        Toast.makeText(this, "Cart saved!", Toast.LENGTH_SHORT).show()
+
+        // Navigate to CartActivity
+        val intent = Intent(this, CartActivity::class.java)
         startActivity(intent)
     }
-
 }
+
 
 class MealAdapter(
     private val meals: List<MealResponse>,
@@ -349,8 +389,9 @@ class ItemAdapter(
 data class Cart(
     val offlineId: Long,
     val restaurantName: String,
-    val items: List<ItemResponse>,
-    val meals: List<MealResponse>
+    val items: List<OfflineCartItem>,
+    val meals: List<OfflineCartMeal>,
+    val totalPrice: Double
 )
 data class OfflineCartItem(
     val id: Long,

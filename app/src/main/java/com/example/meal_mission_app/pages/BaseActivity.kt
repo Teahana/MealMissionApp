@@ -22,37 +22,29 @@ open class BaseActivity : AppCompatActivity() {
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
-                    if (this !is CustomerHomepageActivity) {
-                        val intent = Intent(this, CustomerHomepageActivity::class.java)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                        startActivity(intent)
+                    if (this !is CustomerHomepageActivity && this !is RestaurantDetailsActivity) {
+                        startActivity(Intent(this, CustomerHomepageActivity::class.java))
                         finish()
                     }
                     true
                 }
                 R.id.nav_cart -> {
                     if (this !is CartActivity) {
-                        val intent = Intent(this, CartActivity::class.java)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                        startActivity(intent)
+                        startActivity(Intent(this, CartActivity::class.java))
                         finish()
                     }
                     true
                 }
 //                R.id.nav_orders -> {
-//                    if (this !is RestaurantDetailsActivity) {
-//                        val intent = Intent(this, RestaurantDetailsActivity::class.java)
-//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-//                        startActivity(intent)
+//                    if (this !is OrdersActivity) {
+//                        startActivity(Intent(this, OrdersActivity::class.java))
 //                        finish()
 //                    }
 //                    true
 //                }
                 R.id.nav_profile -> {
                     if (this !is CustomerActivity) {
-                        val intent = Intent(this, CustomerActivity::class.java)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                        startActivity(intent)
+                        startActivity(Intent(this, CustomerActivity::class.java))
                         finish()
                     }
                     true
@@ -60,6 +52,7 @@ open class BaseActivity : AppCompatActivity() {
                 else -> false
             }
         }
+
     }
 
     // This will allow child activities to specify which item to highlight

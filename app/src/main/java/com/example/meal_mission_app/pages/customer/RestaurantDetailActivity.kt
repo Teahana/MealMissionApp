@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.meal_mission_app.R
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
+import com.example.meal_mission_app.pages.BaseActivity
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,15 +28,17 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 
-class RestaurantDetailsActivity : AppCompatActivity() {
+class RestaurantDetailsActivity : BaseActivity() {
     private lateinit var selectedItems: MutableList<Pair<ItemResponse, Int>>
     private lateinit var selectedMeals: MutableList<Pair<MealResponse, Int>>
     private lateinit var totalPriceTextView: TextView
-
+    override fun getSelectedItemId(): Int {
+        return R.id.nav_home
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_restaurant_details)
+        layoutInflater.inflate(R.layout.activity_restaurant_details, findViewById(R.id.activity_content))
 
         // Enable the back button in the action bar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

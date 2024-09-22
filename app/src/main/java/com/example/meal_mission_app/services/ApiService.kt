@@ -3,6 +3,8 @@ package com.example.meal_mission_app.services;
 import com.example.meal_mission_app.DTO.LoginResponse
 import com.example.meal_mission_app.DTO.RestaurantResponse
 import com.example.meal_mission_app.pages.customer.RestaurantDetailResponse
+import com.example.meal_mission_app.pages.customer.SaveUserLocationResponse
+import com.example.meal_mission_app.pages.customer.UserLocation
 import com.example.meal_mission_app.pages.restaurant.CustomerLiveOrder
 import com.example.meal_mission_app.pages.restaurant.CustomerOrderDto
 import com.example.meal_mission_app.pages.restaurant.CustomerOrderResponse
@@ -25,7 +27,16 @@ interface ApiService {
         @Body data: Map<String, String?>,
         @Header("Authorization") authToken: String? = null
     ): Response<LoginResponse>
-
+    @POST("/api/saveUserLocation")
+    suspend fun saveUserLocation(
+        @Body data: Map<String, String?>,
+        @Header("Authorization") authToken: String? = null
+    ): Response<Map<String, Any>>
+    @POST("/api/getUserLocations")
+    suspend fun getUserLocations(
+        @Body data: Map<String, String?>,
+        @Header("Authorization") authToken: String? = null
+    ): Response<List<UserLocation>>
     @GET("/api/getRestaurants")
     suspend fun getRestaurants(
         @Header("Authorization") authToken: String
@@ -71,5 +82,10 @@ interface ApiService {
     suspend fun getReadyOrders(
         @Header("Authorization") authToken: String
     ): Response<List<CustomerLiveOrder>>
+    @POST("/api/deleteLocation")
+    suspend fun deleteLocation(
+        @Body requestData: Map<String, String>,
+        @Header("Authorization") token: String
+    ): Response<Map<String, Any>>
 }
 

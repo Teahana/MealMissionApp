@@ -1,352 +1,233 @@
 package com.example.meal_mission_app.pages.customer
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.Spinner
 import android.widget.TextView
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.meal_mission_app.R
+import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
 import com.example.meal_mission_app.pages.BaseActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class CartActivity : BaseActivity() {
 
+    private lateinit var locationSpinner: Spinner
+    private lateinit var locationAdapter: ArrayAdapter<String>
+    private lateinit var cartRecyclerView: RecyclerView
+    private lateinit var cartAdapter: CartAdapter
+    private var userLocations = listOf<UserLocation>()
+    private var selectedLocationId: Long? = null
+    private var cartList = listOf<Cart>()
+    private val successfullySubmittedOrders = mutableListOf<String>()
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d("CartActivity", "CartActivity created")
 
         super.onCreate(savedInstanceState)
         layoutInflater.inflate(R.layout.activity_cart, findViewById(R.id.activity_content))
 
+        locationSpinner = findViewById(R.id.locationSpinner)
+        cartRecyclerView = findViewById(R.id.cartRecyclerView)
+        val submitOrderButton: Button = findViewById(R.id.submitOrderButton)
+
         // Fetch the list of carts from SharedPreferences
-        val cartList = OfflineStorageService.getCartList(this)
+        cartList = OfflineStorageService.getCartList(this)
 
-        // Get the TextView where we will display the cart list
-        val cartTextView: TextView = findViewById(R.id.cartTextView)
-
-        // If there are no carts, display a message
         if (cartList.isEmpty()) {
-            cartTextView.text = "No carts found."
+            Toast.makeText(this, "No carts found.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Build a string to display all the cart details
-        val cartDetails = StringBuilder()
-        cartList.forEachIndexed { index, cart ->
-            cartDetails.append("Order ${index + 1}:\n")
-            cartDetails.append("Restaurant: ${cart.restaurantName}\n")
-            cartDetails.append("Total Price: $${cart.totalPrice}\n")
-
-            // Display items in the cart
-            cartDetails.append("Items:\n")
-            cart.items.forEach { item ->
-                cartDetails.append("- ${item.name}: ${item.quantity} x $${item.price}\n")
-            }
-
-            // Display meals in the cart
-            cartDetails.append("Meals:\n")
-            cart.meals.forEach { meal ->
-                cartDetails.append("- ${meal.name}: ${meal.quantity} x $${meal.price}\n")
-            }
-
-            // Add separation between carts
-            cartDetails.append("\n------------------------\n\n")
+        // Set up the RecyclerView
+        cartAdapter = CartAdapter(cartList) { cart ->
+            OfflineStorageService.removeCartByOfflineId(this, cart.offlineId)
+            cartList = OfflineStorageService.getCartList(this) // Update the cart list
+            cartAdapter.updateCartList(cartList) // Refresh the adapter's data
         }
+        cartRecyclerView.layoutManager = LinearLayoutManager(this)
+        cartRecyclerView.adapter = cartAdapter
 
-        // Set the text to the TextView
-        cartTextView.text = cartDetails.toString()
+        // Fetch user locations and populate the spinner
+        fetchUserLocations()
+
+        // Set up the submit button
+        submitOrderButton.setOnClickListener {
+            if (selectedLocationId == null) {
+                Toast.makeText(this, "Please select a location.", Toast.LENGTH_SHORT).show()
+            } else {
+                submitOrders()
+            }
+        }
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun submitOrders() {
+        val token = "Bearer ${OfflineStorageService.getToken(this)}"
+        val customerId = OfflineStorageService.getUserId(this)
+
+        GlobalScope.launch(Dispatchers.IO) {
+            cartList.forEach { cart ->
+                val orderData = mutableMapOf(
+                    "restaurantId" to cart.offlineId.toString(),
+                    "customerId" to customerId.toString(),
+                    "locationId" to selectedLocationId.toString(),
+                    "totalPrice" to cart.totalPrice.toString(),
+                    "items" to cart.items.map { mapOf("itemId" to it.id.toString(), "quantity" to it.quantity.toString()) },
+                    "meals" to cart.meals.map { mapOf("mealId" to it.id.toString(), "quantity" to it.quantity.toString()) }
+                )
+
+                try {
+                    val response = NetworkClient.apiService.submitOrder(orderData, token)
+                    withContext(Dispatchers.Main) {
+                        if (response.isSuccessful) {
+                            successfullySubmittedOrders.add(cart.offlineId)
+                        } else {
+                            Toast.makeText(this@CartActivity, "Failed to submit order: ${cart.offlineId}.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@CartActivity, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            // After processing all orders, delete the successfully submitted orders
+            withContext(Dispatchers.Main) {
+                successfullySubmittedOrders.forEach { offlineId ->
+                    OfflineStorageService.removeCartByOfflineId(this@CartActivity, offlineId)
+                }
+                // Refresh the cart list and notify adapter
+                cartList = OfflineStorageService.getCartList(this@CartActivity)
+                cartAdapter.updateCartList(cartList)
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun fetchUserLocations() {
+        val userId = OfflineStorageService.getUserId(this)
+        val token = "Bearer ${OfflineStorageService.getToken(this)}"
+
+        val requestData = mapOf(
+            "userId" to userId.toString()
+        )
+
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val response = NetworkClient.apiService.getUserLocations(requestData, token)
+                if (response.isSuccessful) {
+                    response.body()?.let { locations ->
+                        userLocations = locations
+                        withContext(Dispatchers.Main) {
+                            setupLocationSpinner(locations)
+                        }
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@CartActivity, "Failed to fetch locations.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@CartActivity, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun setupLocationSpinner(locations: List<UserLocation>) {
+        val locationNames = locations.map { "${it.address}, ${it.city}" }
+        locationAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, locationNames)
+        locationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        locationSpinner.adapter = locationAdapter
+
+        locationSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                selectedLocationId = userLocations[position].id
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                selectedLocationId = null
+            }
+        }
+    }
+
     override fun getSelectedItemId(): Int {
-        return R.id.nav_cart  // Ensure the "Profile" icon is highlighted in the bottom nav
+        return R.id.nav_cart  // Ensure the "Cart" icon is highlighted in the bottom nav
     }
 }
 
 
 
+class CartAdapter(
+    private var cartList: List<Cart>,
+    private val onDeleteClick: (Cart) -> Unit
+) : RecyclerView.Adapter<CartAdapter.CartViewHolder>() {
 
+    inner class CartViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val orderIdTextView: TextView = view.findViewById(R.id.orderIdTextView)
+        val restaurantNameTextView: TextView = view.findViewById(R.id.restaurantNameTextView)
+        val itemsTextView: TextView = view.findViewById(R.id.itemsTextView)
+        val mealsTextView: TextView = view.findViewById(R.id.mealsTextView)
+        val totalPriceTextView: TextView = view.findViewById(R.id.totalPriceTextView)
+        val deleteButton: Button = view.findViewById(R.id.deleteButton)
+    }
 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CartViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.cart_item, parent, false)
+        return CartViewHolder(view)
+    }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onBindViewHolder(holder: CartViewHolder, position: Int) {
+        val cart = cartList[position]
 
+        holder.orderIdTextView.text = "Order ID: ${cart.offlineId}"
+        holder.restaurantNameTextView.text = "Restaurant: ${cart.restaurantName}"
 
+        // Display Items
+        val itemsText = cart.items.joinToString("\n") { item ->
+            "- ${item.name}: ${item.quantity} x $${item.price}"
+        }
+        holder.itemsTextView.text = "Items:\n$itemsText"
 
+        // Display Meals
+        val mealsText = cart.meals.joinToString("\n") { meal ->
+            "- ${meal.name}: ${meal.quantity} x $${meal.price}"
+        }
+        holder.mealsTextView.text = "Meals:\n$mealsText"
 
+        holder.totalPriceTextView.text = "Total Price: $${cart.totalPrice}"
 
+        // Set up the delete button
+        holder.deleteButton.setOnClickListener {
+            onDeleteClick(cart)
+        }
+    }
 
+    override fun getItemCount() = cartList.size
 
+    fun updateCartList(newCartList: List<Cart>) {
+        this.cartList = newCartList
+        notifyDataSetChanged()
+    }
+}
 
-
-//package com.example.meal_mission_app.pages.customer
-//
-//import android.Manifest
-//import android.content.Intent
-//import android.content.pm.PackageManager
-//import android.location.Location
-//import android.os.Bundle
-//import android.os.Parcel
-//import android.os.Parcelable
-//import android.view.LayoutInflater
-//import android.view.MenuItem
-//import android.view.View
-//import android.view.ViewGroup
-//import android.widget.Button
-//import android.widget.TextView
-//import androidx.appcompat.app.AppCompatActivity
-//import androidx.core.app.ActivityCompat
-//import androidx.recyclerview.widget.LinearLayoutManager
-//import androidx.recyclerview.widget.RecyclerView
-//import com.example.meal_mission_app.R
-//import com.example.meal_mission_app.objects.OfflineStorageService
-//import com.example.meal_mission_app.pages.BaseActivity
-//import com.example.meal_mission_app.services.LocationService
-//import com.google.android.gms.maps.CameraUpdateFactory
-//import com.google.android.gms.maps.GoogleMap
-//import com.google.android.gms.maps.OnMapReadyCallback
-//import com.google.android.gms.maps.SupportMapFragment
-//import com.google.android.gms.maps.model.LatLng
-//import com.google.android.gms.maps.model.MarkerOptions
-//import kotlinx.coroutines.Dispatchers
-//import kotlinx.coroutines.GlobalScope
-//import kotlinx.coroutines.launch
-//
-//class CartActivity : BaseActivity(), OnMapReadyCallback {
-//
-//    private lateinit var recyclerView: RecyclerView
-//    private lateinit var cartAdapter: CartAdapter
-//    private val cartItems: MutableList<CartItem> = mutableListOf()
-//    private val cartMeals: MutableList<CartMeal> = mutableListOf()
-//    private lateinit var map: GoogleMap
-//    private var userLocation: LatLng? = null
-//    private lateinit var locationService: LocationService
-//    private val LOCATION_PERMISSION_REQUEST_CODE = 100
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        setContentView(R.layout.activity_cart)
-//
-//        recyclerView = findViewById(R.id.recyclerViewCart)
-//        recyclerView.layoutManager = LinearLayoutManager(this)
-//        // Enable back arrow in action bar
-//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-//        // Initialize adapter with both cart items and meals
-//        cartAdapter = CartAdapter(cartItems, cartMeals)
-//        recyclerView.adapter = cartAdapter
-//
-//        locationService = LocationService(this)
-//
-//        // Initialize the map
-//        val mapFragment = supportFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment
-//        mapFragment.getMapAsync(this)
-//
-//        // Load cart items and meals from intent or shared preferences
-//        loadCartItemsAndMeals()
-//
-//        // Proceed to payment
-//        findViewById<Button>(R.id.btnProceedToPayment).setOnClickListener {
-//            val intent = Intent(this, PaymentActivity::class.java)
-//            // Pass any necessary data to PaymentActivity
-//            startActivity(intent)
-//        }
-//
-//        // Check location permissions and fetch location if granted
-//        if (checkLocationPermissions()) {
-//            fetchUserLocation()
-//        } else {
-//            requestLocationPermissions()
-//        }
-//    }
-//
-//    // Handle back arrow click in the action bar
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        return when (item.itemId) {
-//            android.R.id.home -> {
-//                // Finish the current activity and go back to the previous one
-//                finish()
-//                true
-//            }
-//            else -> super.onOptionsItemSelected(item)
-//        }
-//    }
-//    // Check if location permissions are granted
-//    private fun checkLocationPermissions(): Boolean {
-//        return ActivityCompat.checkSelfPermission(
-//            this, Manifest.permission.ACCESS_FINE_LOCATION
-//        ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-//            this, Manifest.permission.ACCESS_COARSE_LOCATION
-//        ) == PackageManager.PERMISSION_GRANTED
-//    }
-//
-//    // Request location permissions if not granted
-//    private fun requestLocationPermissions() {
-//        ActivityCompat.requestPermissions(
-//            this,
-//            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
-//            LOCATION_PERMISSION_REQUEST_CODE
-//        )
-//    }
-//
-//    // Handle the result of the permission request
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<out String>,
-//        grantResults: IntArray
-//    ) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-//            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                // Permission was granted, fetch the user's location
-//                println("Permission granted")
-//                fetchUserLocation()
-//            } else {
-//                println("Permissionn was denied")
-//                // Permission was denied, handle accordingly
-//                // You can show a message to the user explaining why the app needs the permission
-//            }
-//        }
-//    }
-//
-//    // Fetch user's location from GPS using LocationService
-//    private fun fetchUserLocation() {
-//        locationService.getCurrentLocation { location: Location? ->
-//            if (location != null) {
-//                userLocation = LatLng(location.latitude, location.longitude)
-//                updateMapLocation(userLocation!!)
-//            } else {
-//                // Handle location error (e.g., show a message to the user)
-//            }
-//        }
-//    }
-//
-//    private fun loadCartItemsAndMeals() {
-//        // Retrieve cart items and meals from the Intent
-//        val itemsList = intent.getParcelableArrayListExtra<CartItem>("cartItems") ?: arrayListOf()
-//        val mealsList = intent.getParcelableArrayListExtra<CartMeal>("cartMeals") ?: arrayListOf()
-//
-//        // Clear the existing cart data and add new items/meals
-//        cartItems.clear()
-//        cartItems.addAll(itemsList)
-//
-//        cartMeals.clear()
-//        cartMeals.addAll(mealsList)
-//
-//        // Notify adapter of data changes
-//        cartAdapter.notifyDataSetChanged()
-//    }
-//
-//    override fun onMapReady(googleMap: GoogleMap) {
-//        map = googleMap
-//
-//        // If location is available, update the map
-//        userLocation?.let {
-//            updateMapLocation(it)
-//        }
-//    }
-//
-//    // Update the map with the current user location
-//    private fun updateMapLocation(location: LatLng) {
-//        map.clear()
-//        map.addMarker(MarkerOptions().position(location).title("Your Location"))
-//        map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
-//    }
-//}
-//class CartAdapter(
-//    private val cartItems: List<CartItem>,
-//    private val cartMeals: List<CartMeal>
-//) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-//
-//    companion object {
-//        private const val TYPE_ITEM = 0
-//        private const val TYPE_MEAL = 1
-//    }
-//
-//    class CartItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-//        val itemName: TextView = itemView.findViewById(R.id.textViewItemName)
-//        val itemQuantity: TextView = itemView.findViewById(R.id.textViewItemQuantity)
-//        val itemPrice: TextView = itemView.findViewById(R.id.textViewItemPrice)
-//    }
-//
-//    class CartMealViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-//        val mealName: TextView = itemView.findViewById(R.id.textViewMealName)
-//        val mealQuantity: TextView = itemView.findViewById(R.id.textViewMealQuantity)
-//        val mealPrice: TextView = itemView.findViewById(R.id.textViewMealPrice)
-//    }
-//
-//    override fun getItemViewType(position: Int): Int {
-//        return if (position < cartItems.size) TYPE_ITEM else TYPE_MEAL
-//    }
-//
-//    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-//        return if (viewType == TYPE_ITEM) {
-//            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_cart, parent, false)
-//            CartItemViewHolder(view)
-//        } else {
-//            val view = LayoutInflater.from(parent.context).inflate(R.layout.meal_cart, parent, false)
-//            CartMealViewHolder(view)
-//        }
-//    }
-//
-//    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-//        if (getItemViewType(position) == TYPE_ITEM) {
-//            val item = cartItems[position]
-//            val itemHolder = holder as CartItemViewHolder
-//            itemHolder.itemName.text = "Item ID: ${item.itemId}" // Modify to show actual item name if available
-//            itemHolder.itemQuantity.text = "Quantity: ${item.quantity}"
-//            itemHolder.itemPrice.text = "Price: \$${item.quantity * 10.0}" // Replace with actual price logic
-//        } else {
-//            val meal = cartMeals[position - cartItems.size]
-//            val mealHolder = holder as CartMealViewHolder
-//            mealHolder.mealName.text = "Meal ID: ${meal.mealId}" // Modify to show actual meal name if available
-//            mealHolder.mealQuantity.text = "Quantity: ${meal.quantity}"
-//            mealHolder.mealPrice.text = "Price: \$${meal.quantity * 15.0}" // Replace with actual price logic
-//        }
-//    }
-//
-//    override fun getItemCount(): Int {
-//        return cartItems.size + cartMeals.size
-//    }
-//}
-//
-//// Sample data class for cart items
-//data class CartItem(val itemId: Long, val quantity: Int) : Parcelable {
-//    constructor(parcel: Parcel) : this(
-//        parcel.readLong(),
-//        parcel.readInt()
-//    )
-//
-//    override fun writeToParcel(parcel: Parcel, flags: Int) {
-//        parcel.writeLong(itemId)
-//        parcel.writeInt(quantity)
-//    }
-//
-//    override fun describeContents(): Int = 0
-//
-//    companion object CREATOR : Parcelable.Creator<CartItem> {
-//        override fun createFromParcel(parcel: Parcel): CartItem {
-//            return CartItem(parcel)
-//        }
-//
-//        override fun newArray(size: Int): Array<CartItem?> {
-//            return arrayOfNulls(size)
-//        }
-//    }
-//}
-//
-//data class CartMeal(val mealId: Long, val quantity: Int) : Parcelable {
-//    constructor(parcel: Parcel) : this(
-//        parcel.readLong(),
-//        parcel.readInt()
-//    )
-//
-//    override fun writeToParcel(parcel: Parcel, flags: Int) {
-//        parcel.writeLong(mealId)
-//        parcel.writeInt(quantity)
-//    }
-//
-//    override fun describeContents(): Int = 0
-//
-//    companion object CREATOR : Parcelable.Creator<CartMeal> {
-//        override fun createFromParcel(parcel: Parcel): CartMeal {
-//            return CartMeal(parcel)
-//        }
-//
-//        override fun newArray(size: Int): Array<CartMeal?> {
-//            return arrayOfNulls(size)
-//        }
-//    }
-//}

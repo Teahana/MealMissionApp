@@ -81,7 +81,26 @@
         android:textColor="#FFFFFF"
         android:padding="12dp"
     />
+    <Button
+        android:id="@+id/customer_login_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login as Customer"
+        android:layout_marginTop="8dp" />
 
+    <Button
+        android:id="@+id/driver_login_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login as Driver"
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/restaurant_login_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login as Restaurant"
+        android:layout_marginTop="8dp" />
 
 
 </LinearLayout>

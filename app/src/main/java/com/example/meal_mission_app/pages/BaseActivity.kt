@@ -7,6 +7,7 @@ import com.example.meal_mission_app.R
 import com.example.meal_mission_app.pages.customer.CartActivity
 import com.example.meal_mission_app.pages.customer.CustomerActivity
 import com.example.meal_mission_app.pages.customer.CustomerHomepageActivity
+import com.example.meal_mission_app.pages.customer.ProfileActivity
 import com.example.meal_mission_app.pages.customer.RestaurantDetailsActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
@@ -43,8 +44,8 @@ open class BaseActivity : AppCompatActivity() {
 //                    true
 //                }
                 R.id.nav_profile -> {
-                    if (this !is CustomerActivity) {
-                        startActivity(Intent(this, CustomerActivity::class.java))
+                    if (this !is ProfileActivity) {
+                        startActivity(Intent(this, ProfileActivity::class.java))
                         finish()
                     }
                     true

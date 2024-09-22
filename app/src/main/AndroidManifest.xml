@@ -65,6 +65,11 @@
             android:label="RestaurantDetails"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
         <activity
+            android:name=".pages.customer.ProfileActivity"
+            android:exported="true"
+            android:label="RestaurantDetails"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+        <activity
             android:name=".pages.driver.DriverHomePageActivity"
             android:exported="true"
             android:label="@string/app_name"

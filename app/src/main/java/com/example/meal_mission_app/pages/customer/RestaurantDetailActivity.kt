@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.util.UUID
 
 class RestaurantDetailsActivity : BaseActivity() {
     private lateinit var selectedItems: MutableList<Pair<ItemResponse, Int>>
@@ -208,7 +209,7 @@ class RestaurantDetailsActivity : BaseActivity() {
 
         // Create the Cart object
         val cart = Cart(
-            restaurantId,
+            UUID.randomUUID().toString(),
             findViewById<TextView>(R.id.restaurantName).text.toString(),
             itemsList,
             mealsList,
@@ -390,7 +391,7 @@ class ItemAdapter(
 }
 
 data class Cart(
-    val offlineId: Long,
+    val offlineId: String,
     val restaurantName: String,
     val items: List<OfflineCartItem>,
     val meals: List<OfflineCartMeal>,

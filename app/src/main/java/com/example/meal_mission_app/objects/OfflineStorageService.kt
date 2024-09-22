@@ -60,6 +60,34 @@ object OfflineStorageService {
             emptyList()  // Return an empty list if no cart data is found
         }
     }
+    fun removeCartByOfflineId(context: Context, offlineId: String) {
+        val editor = getPreferences(context).edit()
+
+        // Retrieve the current list of carts
+        val cartListJson = getPreferences(context).getString(CART_LIST_KEY, null)
+        val cartList: MutableList<Cart> = if (cartListJson != null) {
+            Gson().fromJson(cartListJson, object : TypeToken<MutableList<Cart>>() {}.type)
+        } else {
+            mutableListOf()
+        }
+
+        // Remove the cart with the specified offlineId
+        val iterator = cartList.iterator()
+        while (iterator.hasNext()) {
+            val cart = iterator.next()
+            if (cart.offlineId == offlineId) {
+                iterator.remove()
+                break
+            }
+        }
+
+        // Serialize the updated list back to JSON
+        val updatedCartListJson = Gson().toJson(cartList)
+
+        // Save the updated list in SharedPreferences
+        editor.putString(CART_LIST_KEY, updatedCartListJson)
+        editor.apply()
+    }
 
     // Clear the list of carts from SharedPreferences
     fun clearCartList(context: Context) {

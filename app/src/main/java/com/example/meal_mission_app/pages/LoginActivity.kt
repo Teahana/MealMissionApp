@@ -27,6 +27,9 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var usernameEditText: EditText
     private lateinit var passwordEditText: EditText
     private lateinit var loginButton: Button
+    private lateinit var customerLoginButton: Button
+    private lateinit var driverLoginButton: Button
+    private lateinit var restaurantLoginButton: Button
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,11 +39,26 @@ class LoginActivity : AppCompatActivity() {
         usernameEditText = findViewById(R.id.username)
         passwordEditText = findViewById(R.id.password)
         loginButton = findViewById(R.id.login_button)
+        customerLoginButton = findViewById(R.id.customer_login_button)
+        driverLoginButton = findViewById(R.id.driver_login_button)
+        restaurantLoginButton = findViewById(R.id.restaurant_login_button)
 
         loginButton.setOnClickListener {
             val username = usernameEditText.text.toString()
             val password = passwordEditText.text.toString()
             performLogin(username, password)
+        }
+
+        customerLoginButton.setOnClickListener {
+            performLogin("customer", "password")
+        }
+
+        driverLoginButton.setOnClickListener {
+            performLogin("driver", "password")
+        }
+
+        restaurantLoginButton.setOnClickListener {
+            performLogin("restaurant", "password")
         }
     }
 
@@ -67,7 +85,7 @@ class LoginActivity : AppCompatActivity() {
                     val userType = responseData?.userType
 
                     // Save tokens and userId to shared preferences or secure storage
-                    OfflineStorageService.saveCredentials(applicationContext, token, refreshToken, userId,userType)
+                    OfflineStorageService.saveCredentials(applicationContext, token, refreshToken, userId, userType)
 
                     // Determine where to navigate based on userType
                     withContext(Dispatchers.Main) {
@@ -102,3 +120,4 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 }
+

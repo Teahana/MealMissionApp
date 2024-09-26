@@ -210,12 +210,15 @@ class RestaurantDetailsActivity : BaseActivity() {
         // Create the Cart object
         val cart = Cart(
             UUID.randomUUID().toString(),
+            restaurantId,
+            customerId?.toLong() ?: -1,
             findViewById<TextView>(R.id.restaurantName).text.toString(),
             itemsList,
             mealsList,
             totalPrice
         )
-
+        println("Saved cart below")
+        println(cart)
         // Save the cart to SharedPreferences (as part of the list)
         OfflineStorageService.saveCart(this, cart)
 
@@ -392,6 +395,8 @@ class ItemAdapter(
 
 data class Cart(
     val offlineId: String,
+    val restaurantId: Long,
+    val customerId: Long,
     val restaurantName: String,
     val items: List<OfflineCartItem>,
     val meals: List<OfflineCartMeal>,

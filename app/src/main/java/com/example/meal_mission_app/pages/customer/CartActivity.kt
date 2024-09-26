@@ -80,24 +80,25 @@ class CartActivity : BaseActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun submitOrders() {
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
-        val customerId = OfflineStorageService.getUserId(this)
 
         GlobalScope.launch(Dispatchers.IO) {
             cartList.forEach { cart ->
                 val orderData = mutableMapOf(
-                    "restaurantId" to cart.offlineId.toString(),
-                    "customerId" to customerId.toString(),
+                    "restaurantId" to cart.restaurantId.toString(),
+                    "customerId" to cart.customerId.toString(),
                     "locationId" to selectedLocationId.toString(),
                     "totalPrice" to cart.totalPrice.toString(),
                     "items" to cart.items.map { mapOf("itemId" to it.id.toString(), "quantity" to it.quantity.toString()) },
                     "meals" to cart.meals.map { mapOf("mealId" to it.id.toString(), "quantity" to it.quantity.toString()) }
                 )
-
+                println("Order data below")
+                println(orderData)
                 try {
                     val response = NetworkClient.apiService.submitOrder(orderData, token)
                     withContext(Dispatchers.Main) {
                         if (response.isSuccessful) {
                             successfullySubmittedOrders.add(cart.offlineId)
+                            Toast.makeText(this@CartActivity, "Order ${cart.offlineId} submitted successfully!", Toast.LENGTH_SHORT).show()
                         } else {
                             Toast.makeText(this@CartActivity, "Failed to submit order: ${cart.offlineId}.", Toast.LENGTH_SHORT).show()
                         }
@@ -120,6 +121,7 @@ class CartActivity : BaseActivity() {
             }
         }
     }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchUserLocations() {

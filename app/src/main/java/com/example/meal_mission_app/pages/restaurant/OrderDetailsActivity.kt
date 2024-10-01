@@ -40,7 +40,13 @@ class OrderDetailsActivity : AppCompatActivity() {
         initializeViews()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
+
         orderId = intent.getLongExtra("ORDER_ID", -1L)
+        val orderStatus = intent.getStringExtra("ORDER_STATUS")
+
+        // Set the initial state of the buttons based on the order status
+        updateButtonState(orderStatus ?: "PENDING")
+
         if (orderId != -1L) {
             lifecycleScope.launch {
                 fetchOrderDetails(orderId)
@@ -61,7 +67,18 @@ class OrderDetailsActivity : AppCompatActivity() {
             }
         }
     }
+    // Handle back button press
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                // Navigate back to the previous screen
+                finish()
+                true
+            }
 
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
     private fun initializeViews() {
         textViewOrderId = findViewById(R.id.textViewOrderId)
         textViewOrderStatus = findViewById(R.id.textViewOrderStatus)
@@ -74,11 +91,33 @@ class OrderDetailsActivity : AppCompatActivity() {
         buttonOrderReady = findViewById(R.id.buttonOrderReady)
     }
 
+    // Method to update the button states based on order status
+    private fun updateButtonState(orderStatus: String) {
+        when (orderStatus) {
+            "PENDING" -> {
+                buttonAcceptOrder.isEnabled = true
+                buttonOrderReady.isEnabled = false
+            }
+            "ACCEPTED" -> {
+                buttonAcceptOrder.isEnabled = false
+                buttonOrderReady.isEnabled = true
+            }
+            "READY" -> {
+                buttonAcceptOrder.isEnabled = false
+                buttonOrderReady.isEnabled = false
+            }
+            else -> {
+                buttonAcceptOrder.isEnabled = false
+                buttonOrderReady.isEnabled = false
+            }
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun fetchOrderDetails(orderId: Long) {
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
         val requestBody = HashMap<String, String?>()
-        requestBody.put("orderId",orderId.toString());
+        requestBody.put("orderId", orderId.toString())
         try {
             val response = NetworkClient.apiService.getOrderDetails(requestBody, token)
             if (response.isSuccessful) {
@@ -86,6 +125,7 @@ class OrderDetailsActivity : AppCompatActivity() {
                 orderDetails?.let {
                     withContext(Dispatchers.Main) {
                         displayOrderDetails(it)
+                        updateButtonState(it.status) // Update buttons after fetching order details
                     }
                 }
             } else {
@@ -99,16 +139,7 @@ class OrderDetailsActivity : AppCompatActivity() {
             }
         }
     }
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                // Navigate back to the previous screen
-                finish()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
+
     private fun displayOrderDetails(orderDetails: CustomerOrderDto) {
         textViewOrderId.text = "Order #${orderDetails.orderId}"
         textViewOrderStatus.text = orderDetails.status
@@ -122,6 +153,7 @@ class OrderDetailsActivity : AppCompatActivity() {
             "${it.quantity}x ${it.mealName} ($${it.mealPrice})"
         }
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun updateOrderStatusAccept(orderId: Long) {
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
@@ -135,34 +167,25 @@ class OrderDetailsActivity : AppCompatActivity() {
                 val statusUpdateResponse = response.body()
                 if (statusUpdateResponse != null) {
                     withContext(Dispatchers.Main) {
-                        // Check the status sent back from the server
                         when (OrderStatus.valueOf(statusUpdateResponse.status)) {
                             OrderStatus.ACCEPTED -> {
                                 textViewOrderStatus.text = "Order status: ${statusUpdateResponse.statusMessage}"
                                 Toast.makeText(this@OrderDetailsActivity, "Order status updated: ${statusUpdateResponse.status}", Toast.LENGTH_SHORT).show()
-                                findViewById<Button>(R.id.buttonAcceptOrder).isEnabled = false
+                                buttonAcceptOrder.isEnabled = false
+                                buttonOrderReady.isEnabled = true
                             }
                             OrderStatus.DUPLICATE -> {
                                 textViewOrderStatus.text = "Order status: ${statusUpdateResponse.statusMessage}"
                                 Toast.makeText(this@OrderDetailsActivity, "Order already accepted", Toast.LENGTH_SHORT).show()
-                                findViewById<Button>(R.id.buttonAcceptOrder).isEnabled = false
+                                buttonAcceptOrder.isEnabled = false
                             }
                             else -> {
                                 Toast.makeText(this@OrderDetailsActivity, "Unknown status: ${statusUpdateResponse.status}", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(this@OrderDetailsActivity, "Received empty response", Toast.LENGTH_SHORT).show()
-                    }
                 }
-            }
-            else if(response.code().equals(404)){
-                println("Order not found")
-                //ToDo
-            }
-            else {
+            } else {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@OrderDetailsActivity, "Failed to update order status", Toast.LENGTH_SHORT).show()
                 }
@@ -191,10 +214,6 @@ class OrderDetailsActivity : AppCompatActivity() {
                         Toast.makeText(this@OrderDetailsActivity, "Order is ready: ${statusUpdateResponse.status}", Toast.LENGTH_SHORT).show()
                         buttonOrderReady.isEnabled = false
                     }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(this@OrderDetailsActivity, "Received empty response", Toast.LENGTH_SHORT).show()
-                    }
                 }
             } else {
                 withContext(Dispatchers.Main) {
@@ -208,6 +227,7 @@ class OrderDetailsActivity : AppCompatActivity() {
         }
     }
 }
+
 
 data class CustomerOrderDto(
     val orderId: Long,

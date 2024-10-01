@@ -37,6 +37,7 @@ import com.example.meal_mission_app.R
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
 import com.example.meal_mission_app.pages.BaseActivity
+import com.example.meal_mission_app.pages.LoginActivity
 import com.example.meal_mission_app.services.LocationService
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
@@ -66,12 +67,14 @@ import java.util.Locale
 
 class ProfileActivity : BaseActivity() {
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         layoutInflater.inflate(R.layout.activity_profile, findViewById(R.id.activity_content))
 
         val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
         val viewPager = findViewById<ViewPager2>(R.id.viewPager)
+        val logoutButton: Button = findViewById(R.id.logoutButton)
 
         viewPager.adapter = ProfilePagerAdapter(this)
 
@@ -83,6 +86,22 @@ class ProfileActivity : BaseActivity() {
                 else -> "Basic Info"
             }
         }.attach()
+
+        // Set up logout button click listener
+        logoutButton.setOnClickListener {
+            logoutUser()
+        }
+    }
+
+    private fun logoutUser() {
+        // Clear user data from offline storage
+       // OfflineStorageService.clearUserCredentials(this)
+
+        // Navigate back to the login activity
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()  // Finish current activity
     }
     override fun getSelectedItemId(): Int {
         return R.id.nav_profile  // Ensure the "Profile" icon is highlighted in the bottom nav

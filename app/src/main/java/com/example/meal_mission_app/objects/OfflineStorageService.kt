@@ -136,4 +136,13 @@ object OfflineStorageService {
         editor.remove(LOCATION_TASK_ID_KEY)
         editor.apply()
     }
+//    fun clearUserCredentials(context: Context) {
+//        val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+//        val editor = sharedPreferences.edit()
+//        editor.remove(KEY_TOKEN)
+//        editor.remove(KEY_USER_ID)
+//        editor.remove(KEY_REFRESH_TOKEN)
+//        editor.remove(KEY_USER_TYPE)
+//        editor.apply()
+//    }
 }

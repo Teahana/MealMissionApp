@@ -43,9 +43,10 @@ class OrderListActivity : AppCompatActivity() {
 
         recyclerView = findViewById(R.id.recyclerViewOrders)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        orderAdapter = OrderAdapter(orders) { orderId ->
+        orderAdapter = OrderAdapter(orders) { orderId, orderStatus ->
             val intent = Intent(this, OrderDetailsActivity::class.java)
             intent.putExtra("ORDER_ID", orderId)
+            intent.putExtra("ORDER_STATUS", orderStatus)
             startActivity(intent)
         }
         recyclerView.adapter = orderAdapter
@@ -115,7 +116,7 @@ class OrderListActivity : AppCompatActivity() {
 
 class OrderAdapter(
     private val orders: List<CustomerLiveOrder>,
-    private val onItemClick: (Long) -> Unit
+    private val onItemClick: (Long, String) -> Unit
 ) : RecyclerView.Adapter<OrderAdapter.OrderViewHolder>() {
 
     class OrderViewHolder(itemView: android.view.View) : RecyclerView.ViewHolder(itemView) {
@@ -134,7 +135,9 @@ class OrderAdapter(
         holder.textViewOrderId.text = "Order #${order.orderId}"
         holder.textViewOrderStatus.text = order.orderStatus
         holder.textViewOrderDateTime.text = "${order.orderDate} ${order.orderTime}"
-        holder.itemView.setOnClickListener { onItemClick(order.orderId) }
+        holder.itemView.setOnClickListener {
+            onItemClick(order.orderId, order.orderStatus)
+        }
     }
 
     override fun getItemCount() = orders.size

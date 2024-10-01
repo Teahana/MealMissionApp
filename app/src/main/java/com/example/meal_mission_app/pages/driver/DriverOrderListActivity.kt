@@ -29,9 +29,10 @@ class DriverOrderListActivity : AppCompatActivity() {
 
         recyclerView = findViewById(R.id.recyclerViewOrders)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        orderAdapter = OrderAdapter(orders) { orderId ->
+        orderAdapter = OrderAdapter(orders) { orderId, orderStatus ->
             val intent = Intent(this, DriverOrderDetailsActivity::class.java)  // Different activity for driver
             intent.putExtra("ORDER_ID", orderId)
+            intent.putExtra("ORDER_STATUS", orderStatus)
             startActivity(intent)
         }
         recyclerView.adapter = orderAdapter

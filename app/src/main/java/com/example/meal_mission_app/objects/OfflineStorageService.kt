@@ -15,17 +15,19 @@ object OfflineStorageService {
     private const val USER_TYPE = "user_type";
     private const val LOCATION_TASK_ID_KEY = "location_task_id"
     private const val CART_LIST_KEY = "cart"
+    private const val RESTAURANT_ID = "restaurant_id"
 
     private fun getPreferences(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
     }
 
-    fun saveCredentials(context: Context, token: String?, refreshToken: String?, userId: String?, userType: String?) {
+    fun saveCredentials(context: Context, token: String?, refreshToken: String?, userId: String?, userType: String?, restaurantId: String?) {
         val editor = getPreferences(context).edit()
         editor.putString(TOKEN_KEY, token)
         editor.putString(REFRESH_TOKEN_KEY, refreshToken)
         editor.putString(USER_ID_KEY, userId)
         editor.putString(USER_TYPE,userType)
+        editor.putString(RESTAURANT_ID,restaurantId)
         editor.apply()
     }
     // Save the new cart into a list of carts

@@ -27,7 +27,8 @@ data class CustomerLiveOrder(
     val orderId: Long,
     val orderStatus: String,
     val orderDate: LocalDate,
-    val orderTime: LocalTime
+    val orderTime: LocalTime,
+    val orderDistance: Double?
 )
 
 class OrderListActivity : AppCompatActivity() {
@@ -123,6 +124,7 @@ class OrderAdapter(
         val textViewOrderId: TextView = itemView.findViewById(R.id.textViewOrderId)
         val textViewOrderStatus: TextView = itemView.findViewById(R.id.textViewOrderStatus)
         val textViewOrderDateTime: TextView = itemView.findViewById(R.id.textViewOrderDateTime)
+        val textViewOrderDistance: TextView = itemView.findViewById(R.id.textViewOrderDistance)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
@@ -134,7 +136,10 @@ class OrderAdapter(
         val order = orders[position]
         holder.textViewOrderId.text = "Order #${order.orderId}"
         holder.textViewOrderStatus.text = order.orderStatus
-        holder.textViewOrderDateTime.text = "${order.orderDate} ${order.orderTime}"
+        holder.textViewOrderDateTime.text = "Date: ${order.orderDate} Time: ${order.orderTime}"
+        if(order.orderDistance != null){
+            holder.textViewOrderDistance.text = "${order.orderDistance}Km"
+        }
         holder.itemView.setOnClickListener {
             onItemClick(order.orderId, order.orderStatus)
         }

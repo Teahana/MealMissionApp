@@ -7,5 +7,7 @@ data class LoginResponse(
     var userType: String?,
     var longitude: Double?,
     var latitude: Double?,
-    var accuracy: Double?
+    var accuracy: Double?,
+    var restaurantId: String?
+   // var driverId: Long
 )

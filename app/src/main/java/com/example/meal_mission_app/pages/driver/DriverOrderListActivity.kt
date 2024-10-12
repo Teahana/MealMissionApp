@@ -14,6 +14,8 @@ import com.example.meal_mission_app.objects.OfflineStorageService
 import com.example.meal_mission_app.pages.restaurant.CustomerLiveOrder
 import com.example.meal_mission_app.pages.restaurant.OrderAdapter
 import kotlinx.coroutines.*
+import java.time.LocalDate
+import java.time.LocalTime
 
 class DriverOrderListActivity : AppCompatActivity() {
 
@@ -102,3 +104,13 @@ class DriverOrderListActivity : AppCompatActivity() {
         pollingJob?.cancel()
     }
 }
+data class CustomerReadyOrder(
+    val orderId: Long,
+    val orderStatus: String,
+    val orderDate: LocalDate,
+    val orderTime: LocalTime,
+    val latitude: Double,
+    val longitude: Double,
+    val customerName: String?,
+    val customerAddress: String?
+)

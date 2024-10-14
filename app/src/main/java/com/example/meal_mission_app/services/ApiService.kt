@@ -80,6 +80,7 @@ interface ApiService {
 
     @POST("/api/getReadyOrders")
     suspend fun getReadyOrders(
+        @Body requestBody: Map<String, String?>,
         @Header("Authorization") authToken: String
     ): Response<List<CustomerLiveOrder>>
     @POST("/api/deleteLocation")
@@ -87,5 +88,12 @@ interface ApiService {
         @Body requestData: Map<String, String>,
         @Header("Authorization") token: String
     ): Response<Map<String, Any>>
+    @POST("/api/updateDriverLocation")
+    suspend fun updateDriverLocation(
+        @Body requestData: Map<String, String>,
+        @Header("Authorization") token: String
+    ): Response<Map<String, Any>>
+
+
 }
 

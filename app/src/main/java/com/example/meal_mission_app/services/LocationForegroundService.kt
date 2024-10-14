@@ -38,110 +38,71 @@ class LocationForegroundService : Service() {
 
         locationRequest = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
-            5000L
+            10000L // Changed to 10 seconds
         ).apply {
-            setMinUpdateIntervalMillis(5000L)
+            setMinUpdateIntervalMillis(10000L)
         }.build()
 
         locationCallback = object : LocationCallback() {
+            @RequiresApi(Build.VERSION_CODES.O)
             override fun onLocationResult(locationResult: LocationResult) {
-                val location = locationResult.lastLocation
-                location?.let {
+                locationResult.lastLocation?.let {
                     println("Location fetched: Latitude ${it.latitude}, Longitude ${it.longitude}, Accuracy ${it.accuracy}")
                     sendLocationToServer(it)
                 }
             }
         }
+    }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService()
+    fun startLocationUpdates() {
+        println("Starting location updates")
+        if (ActivityCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest, locationCallback, Looper.getMainLooper()
+            )
         } else {
-            startForeground(1, createLegacyNotification())
+            println("Location permissions not granted, stopping service")
+            stopSelf()
         }
+    }
 
-        startLocationUpdates()
+    fun stopLocationUpdates() {
+        println("Stopping location updates")
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+        stopSelf()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun startForegroundService() {
-        println("Starting foreground service with notification")
-        val channelId = "LocationServiceChannel"
-        val channel = NotificationChannel(
-            channelId,
-            "Location Service Channel",
-            NotificationManager.IMPORTANCE_DEFAULT
-        )
-
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
-
-        val notification: Notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Location Service")
-            .setContentText("Fetching location in the background")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .build()
-
-        startForeground(1, notification)
-    }
-
-    private fun createLegacyNotification(): Notification {
-        println("Creating legacy notification")
-        return NotificationCompat.Builder(this)
-            .setContentTitle("Location Service")
-            .setContentText("Fetching location in the background")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .build()
-    }
-
-    private fun startLocationUpdates() {
-        println("Starting location updates")
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            println("Location permissions not granted, stopping service")
-            stopSelf()
-            return
-        }
-
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
-    }
-
     private fun sendLocationToServer(location: Location) {
         val userId = OfflineStorageService.getUserId(this) ?: return
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
-
-        println("Sending location to server: Latitude ${location.latitude}, Longitude ${location.longitude}, Accuracy ${location.accuracy}")
 
         val locationData = mapOf(
             "latitude" to location.latitude.toString(),
             "longitude" to location.longitude.toString(),
             "accuracy" to location.accuracy.toString(),
-            "userId" to userId
+            "driverId" to userId
         )
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                NetworkClient.apiService.postRequest("/api/location/update", locationData, token)
+                NetworkClient.apiService.updateDriverLocation(locationData, token)
                 println("Location successfully posted to server")
             } catch (e: Exception) {
                 println("Failed to post location to server: ${e.message}")
-                e.printStackTrace() // Handle error
             }
         }
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
+    override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
-        println("LocationForegroundService destroyed")
-        fusedLocationClient.removeLocationUpdates(locationCallback)
         super.onDestroy()
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+        println("LocationForegroundService destroyed")
     }
 }
+

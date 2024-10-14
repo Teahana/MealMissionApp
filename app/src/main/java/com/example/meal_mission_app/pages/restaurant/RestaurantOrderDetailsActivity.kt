@@ -231,10 +231,15 @@ class OrderDetailsActivity : AppCompatActivity() {
 
 data class CustomerOrderDto(
     val orderId: Long,
+    val latitude: Double,
+    val longitude: Double,
+    val locationDirections: String,
+    val customerAddress: String,
     val customerId: Long,
     val totalPrice: Double,
     val customerName: String,
     val restaurantId: Long,
+    val restaurantName: String,
    // val driverId: Long,
     val orderDate: LocalDate,
     val orderTime: LocalTime,

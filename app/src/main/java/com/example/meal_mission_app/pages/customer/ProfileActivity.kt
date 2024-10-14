@@ -28,6 +28,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.recreate
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -185,6 +186,11 @@ class AddressFragment : Fragment() {
 
         addAddressButton.setOnClickListener {
             val bottomSheet = AddAddressBottomSheet()
+            bottomSheet.setLocationAddedListener(object : AddAddressBottomSheet.OnLocationAddedListener {
+                override fun onLocationAdded() {
+                    fetchUserLocations()  // Refresh locations
+                }
+            })
             bottomSheet.show(parentFragmentManager, "AddAddressBottomSheet")
         }
 
@@ -213,23 +219,17 @@ class AddressFragment : Fragment() {
                         }
                     }
                 } else {
-                    // Extract the error message from the response body
-                    val errorMessage = response.errorBody()?.string()
-                    Log.e("FetchUserLocations", "Failed to fetch addresses: $errorMessage")
-
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "Failed to fetch addresses.", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
-                Log.e("FetchUserLocations", "Error: ${e.localizedMessage}", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
-
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun renderAddressList() {
@@ -238,7 +238,6 @@ class AddressFragment : Fragment() {
         }
         addressListView.adapter = addressAdapter
     }
-
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun deleteUserLocation(locationId: Long) {
@@ -254,13 +253,9 @@ class AddressFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful) {
                         Toast.makeText(requireContext(), "Location deleted successfully!", Toast.LENGTH_SHORT).show()
-                        fetchUserLocations() // Refresh the list after deletion
+                        fetchUserLocations()  // Refresh list after deletion
                     } else {
-                        if (response.code() == 404) {
-                            Toast.makeText(requireContext(), "Location not found or already deleted.", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(requireContext(), "Failed to delete location. Error code: ${response.code()}", Toast.LENGTH_SHORT).show()
-                        }
+                        Toast.makeText(requireContext(), "Failed to delete location.", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
@@ -270,15 +265,23 @@ class AddressFragment : Fragment() {
             }
         }
     }
-
 }
 
-class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
 
+class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
     companion object {
         private const val REQUEST_LOCATION_PERMISSIONS_CODE = 1001
         private const val REQUEST_CHECK_SETTINGS = 1002
         private const val MAX_RETRIES = 5
+    }
+    interface OnLocationAddedListener {
+        fun onLocationAdded()
+    }
+
+    private var locationAddedListener: OnLocationAddedListener? = null
+
+    fun setLocationAddedListener(listener: OnLocationAddedListener) {
+        this.locationAddedListener = listener
     }
 
     private lateinit var mapView: MapView
@@ -310,9 +313,8 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
         addressEditText = view.findViewById(R.id.addressEditText)
         descriptionEditText = view.findViewById(R.id.descriptionEditText)
         val saveAddressButton: Button = view.findViewById(R.id.saveAddressButton)
-        val closeButton: ImageButton = view.findViewById(R.id.closeButton) // Close button
+        val closeButton: ImageButton = view.findViewById(R.id.closeButton)
         loadingTextView = view.findViewById(R.id.loadingTextView)
-
 
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
@@ -337,13 +339,11 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
             behavior.isDraggable = false // Disable dragging/swiping down to dismiss
         }
 
-        // Close button to dismiss the bottom sheet
         closeButton.setOnClickListener {
             dismiss()
         }
 
         saveAddressButton.setOnClickListener {
-            // Save the address to the server using the entered details
             saveUserLocation()
         }
 
@@ -361,42 +361,37 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
         } else {
             requestLocationPermission()
         }
-        // Listen for map clicks to allow the user to place a marker manually
+
         googleMap.setOnMapClickListener { latLng ->
             placeMarkerOnMap(latLng, initialPlacer = false)
         }
     }
-    private fun placeMarkerOnMap(latLng: LatLng, initialPlacer: Boolean) {
-        // Remove the previous marker
-        currentMarker?.remove()
 
-        // Add a new marker at the clicked position
+    private fun placeMarkerOnMap(latLng: LatLng, initialPlacer: Boolean) {
+        currentMarker?.remove()
         currentMarker = googleMap.addMarker(
-            MarkerOptions()
-                .position(latLng)
-                .title("Selected Location")
+            MarkerOptions().position(latLng).title("Selected Location")
         )
 
-        // Move the camera to the new marker
-        if(initialPlacer){
+        if (initialPlacer) {
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
         }
 
         selectedLatitude = latLng.latitude
         selectedLongitude = latLng.longitude
-        // Update the address EditText with the new location
         updateAddressAndCity(latLng)
     }
+
     private fun updateAddressAndCity(latLng: LatLng) {
         val geocoder = Geocoder(requireContext(), Locale.getDefault())
 
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                val addresses: List<Address> = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)?.filterNotNull().orEmpty()
+                val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)?.filterNotNull().orEmpty()
                 if (addresses.isNotEmpty()) {
-                    val address: Address = addresses[0]
-                    selectedAddress = address.getAddressLine(0) // This returns the full address
-                    selectedCity = address.locality // Get the city name
+                    val address = addresses[0]
+                    selectedAddress = address.getAddressLine(0)
+                    selectedCity = address.locality
 
                     launch(Dispatchers.Main) {
                         addressEditText.setText(selectedAddress)
@@ -413,6 +408,7 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
             }
         }
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun saveUserLocation() {
         val token = "Bearer ${OfflineStorageService.getToken(requireContext())}"
@@ -443,24 +439,20 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
 
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful) {
-                        val responseBody = response.body()
-                        println("Response: $responseBody") // Print the response to Logcat
-
+                        locationAddedListener?.onLocationAdded()  // Notify listener
                         Toast.makeText(requireContext(), "Location saved successfully!", Toast.LENGTH_SHORT).show()
+                        dismiss()
                     } else {
-                        println("Response error: ${response.errorBody()?.string()}") // Print the error to Logcat
                         Toast.makeText(requireContext(), "Failed to save location.", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    println("Exception: ${e.localizedMessage}") // Print the exception to Logcat
                     Toast.makeText(requireContext(), "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
-
 
     private fun checkLocationPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
@@ -512,7 +504,6 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
             }
         }
     }
-
     private fun getUserLocation() {
         showLoading("Fetching precise location...")
 
@@ -623,6 +614,7 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
         mapView.onLowMemory()
     }
 }
+
 // UserLocation data class without the User field
 data class UserLocation(
     val id: Long,

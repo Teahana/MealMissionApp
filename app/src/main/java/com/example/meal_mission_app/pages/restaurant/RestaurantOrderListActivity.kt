@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
@@ -16,7 +15,6 @@ import com.example.meal_mission_app.R
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
 import kotlinx.coroutines.*
-import java.sql.SQLOutput
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -28,7 +26,7 @@ data class CustomerLiveOrder(
     val orderStatus: String,
     val orderDate: LocalDate,
     val orderTime: LocalTime,
-    val orderDistance: Double?
+    val orderDistance: String?
 )
 
 class OrderListActivity : AppCompatActivity() {
@@ -136,9 +134,9 @@ class OrderAdapter(
         val order = orders[position]
         holder.textViewOrderId.text = "Order #${order.orderId}"
         holder.textViewOrderStatus.text = order.orderStatus
-        holder.textViewOrderDateTime.text = "Date: ${order.orderDate} Time: ${order.orderTime}"
+        holder.textViewOrderDateTime.text = "Date: ${order.orderDate} \nTime: ${order.orderTime}"
         if(order.orderDistance != null){
-            holder.textViewOrderDistance.text = "${order.orderDistance}Km"
+            holder.textViewOrderDistance.text = "${order.orderDistance}"
         }
         holder.itemView.setOnClickListener {
             onItemClick(order.orderId, order.orderStatus)

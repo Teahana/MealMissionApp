@@ -1,7 +1,9 @@
 package com.example.meal_mission_app.pages.driver
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
@@ -18,14 +20,22 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.meal_mission_app.R
+import com.example.meal_mission_app.helper.OrderStatus
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
 import com.example.meal_mission_app.pages.restaurant.CustomerOrderDto
 import com.example.meal_mission_app.services.LocationForegroundService
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsResponse
+import com.google.android.gms.location.Priority
+import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
+import com.google.android.gms.tasks.Task
 import com.google.maps.android.PolyUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -57,6 +67,7 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     companion object {
         private const val REQUEST_LOCATION_PERMISSIONS_CODE = 1001
+        private const val REQUEST_CHECK_SETTINGS = 1002
         private const val UPDATE_INTERVAL = 10000L
     }
 
@@ -122,7 +133,7 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun checkPermissionsAndSettings() {
         if (checkLocationPermission()) {
-            startLocationUpdates()
+            checkLocationSettings()
         } else {
             requestLocationPermission()
         }
@@ -141,7 +152,51 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
             REQUEST_LOCATION_PERMISSIONS_CODE
         )
     }
+    private fun checkLocationSettings(startForMapUpdates: Boolean = true) {
+        val locationRequest = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY, 10000L
+        ).build()
 
+        val builder = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+
+        val client: SettingsClient = LocationServices.getSettingsClient(this)
+        val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
+
+        task.addOnSuccessListener {
+            // GPS is already enabled
+            if (startForMapUpdates) {
+                // Start location updates for updating the map
+                startLocationUpdates()
+            }
+        }
+
+        task.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException) {
+                try {
+                    exception.startResolutionForResult(this, REQUEST_CHECK_SETTINGS)
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    showToast("Unable to resolve GPS issue")
+                }
+            } else {
+                showToast("GPS is required for this feature.")
+            }
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CHECK_SETTINGS) {
+            if (resultCode == Activity.RESULT_OK) {
+                // GPS has been enabled by the user, proceed to start location updates
+                startLocationUpdates()
+            } else {
+                // GPS was not enabled, show a message to the user
+                showToast("GPS is required to proceed.")
+            }
+        }
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchOrderDetails() {
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
@@ -151,8 +206,17 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
             try {
                 val response = NetworkClient.apiService.getOrderDetails(requestData, token)
                 if (response.isSuccessful) {
-                    response.body()?.let {
-                        withContext(Dispatchers.Main) { handleOrderDetails(it) }
+                    response.body()?.let { orderDto ->
+                        withContext(Dispatchers.Main) {
+                            if (orderDto.status == OrderStatus.DELIVERING.toString()) {
+                                // Show toast to notify driver and redirect to the previous page
+                                showToast("Order already accepted by another driver.")
+                                // Redirect to the previous page
+                                finish() // This will close the current activity and go back to the previous one
+                            } else {
+                                handleOrderDetails(orderDto) // Proceed if the order is not already delivering
+                            }
+                        }
                     }
                 } else {
                     withContext(Dispatchers.Main) {
@@ -168,13 +232,32 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun handleOrderDetails(order: CustomerOrderDto) {
-        textViewOrderDetails.text = """
-            Customer: ${order.customerName}
-            Address: ${order.customerAddress}
-            Directions: ${order.locationDirections}
-            Order Time: ${order.orderTime}
-            Order Date: ${order.orderDate}
-        """.trimIndent()
+        val itemsDetails = order.items.joinToString("\n") { item ->
+            "${item.quantity} x ${item.itemName} (\$${item.itemPrice})"
+        }
+
+        val mealsDetails = order.meals.joinToString("\n") { meal ->
+            "${meal.quantity} x ${meal.mealName} (\$${meal.mealPrice})"
+        }
+
+        val orderDetailsText = """
+        Customer: ${order.customerName}
+        Address: ${order.customerAddress}
+        Directions: ${order.locationDirections}
+        Order Date: ${order.orderDate}
+        Order Time: ${order.orderTime}
+        
+        Items:
+        $itemsDetails
+        
+        Meals:
+        $mealsDetails
+        
+        Total Price: \$${order.totalPrice}
+    """.trimIndent()
+
+        // Set text to the TextView
+        textViewOrderDetails.text = orderDetailsText
 
         customerLatitude = order.latitude
         customerLongitude = order.longitude
@@ -204,10 +287,65 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun acceptOrder() {
-        startForegroundService(Intent(this, LocationForegroundService::class.java))
-        buttonAccept.isEnabled = false
-        buttonDelivered.isEnabled = true
+        val token = "Bearer ${OfflineStorageService.getToken(this)}"
+        val requestData = mapOf(
+            "orderId" to orderId.toString(),
+            "driverId" to OfflineStorageService.getUserId(this).toString()
+        )
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Make the API call to update the order status to "Delivering"
+                val response = NetworkClient.apiService.updateOrderStatusDelivering(requestData, token)
+
+                // Check if the response is successful (HTTP 2xx)
+                if (response.isSuccessful) {
+                    withContext(Dispatchers.Main) {
+                        // First, check location permission
+                        if (checkLocationPermission()) {
+                            // Now check if GPS is on, without starting map updates
+                            checkLocationSettings(false)
+
+                            // Start the ForegroundService for sending the driver's location to the server
+                            val intent = Intent(this@DriverOrderDetailsActivity, LocationForegroundService::class.java)
+                            startForegroundService(intent)
+
+                            buttonAccept.isEnabled = false
+                            buttonDelivered.isEnabled = true
+                            showToast("Order accepted successfully!")
+                        } else {
+                            requestLocationPermission() // Request location permission if not granted
+                        }
+                    }
+                }
+                // Handle the case where the order was already accepted (HTTP 409)
+                else if (response.code() == 409) {
+                    withContext(Dispatchers.Main) {
+                        val statusResponse = response.body() // Parse the response body
+                        if (statusResponse?.status == OrderStatus.DUPLICATE.toString()) {
+                            showToast("Order already accepted by another driver.")
+                            finish() // Go back to the previous screen
+                        }
+                    }
+                }
+                // Handle other errors
+                else {
+                    withContext(Dispatchers.Main) {
+                        showToast("Failed to accept order: ${response.message()}")
+                    }
+                }
+            } catch (e: Exception) {
+                // Handle exceptions (e.g., network issues)
+                withContext(Dispatchers.Main) {
+                    showToast("Error: ${e.localizedMessage}")
+                }
+            }
+        }
     }
+
+
+
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun deliverOrder() {

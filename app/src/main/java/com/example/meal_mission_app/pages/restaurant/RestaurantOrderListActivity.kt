@@ -76,7 +76,8 @@ class OrderListActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun fetchLiveOrders() {
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
-        val requestBody = emptyMap<String, String?>()
+        val restaurantId = OfflineStorageService.getRestaurantId(this)
+        val requestBody = mapOf("restaurantId" to restaurantId.toString())
         try {
             val response = NetworkClient.apiService.getLiveOrders(token,requestBody)
             if (response.isSuccessful) {

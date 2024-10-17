@@ -29,16 +29,25 @@ class LocationForegroundService : Service() {
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
 
+    companion object {
+        const val CHANNEL_ID = "LocationForegroundServiceChannel"
+    }
+
     override fun onCreate() {
         super.onCreate()
 
         println("LocationForegroundService created")
 
+        // Start the service in the foreground with a notification
+        createNotificationChannel()
+        val notification = createNotification()
+        startForeground(1, notification)
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         locationRequest = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
-            10000L // Changed to 10 seconds
+            10000L // Requesting updates every 10 seconds
         ).apply {
             setMinUpdateIntervalMillis(10000L)
         }.build()
@@ -46,12 +55,17 @@ class LocationForegroundService : Service() {
         locationCallback = object : LocationCallback() {
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onLocationResult(locationResult: LocationResult) {
-                locationResult.lastLocation?.let {
-                    println("Location fetched: Latitude ${it.latitude}, Longitude ${it.longitude}, Accuracy ${it.accuracy}")
-                    sendLocationToServer(it)
+                locationResult.lastLocation?.let { gps ->
+                    // Just print the location without sending to the server
+                    println("Location fetched: Latitude ${gps.latitude}, Longitude ${gps.longitude}, Accuracy ${gps.accuracy}")
+
+                    // Commented out sending to the server
+                    sendLocationToServer(gps)
                 }
             }
         }
+
+        startLocationUpdates()
     }
 
     fun startLocationUpdates() {
@@ -68,13 +82,6 @@ class LocationForegroundService : Service() {
             stopSelf()
         }
     }
-
-    fun stopLocationUpdates() {
-        println("Stopping location updates")
-        fusedLocationClient.removeLocationUpdates(locationCallback)
-        stopSelf()
-    }
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun sendLocationToServer(location: Location) {
         val userId = OfflineStorageService.getUserId(this) ?: return
@@ -96,6 +103,11 @@ class LocationForegroundService : Service() {
             }
         }
     }
+    fun stopLocationUpdates() {
+        println("Stopping location updates")
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+        stopSelf()
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -103,6 +115,27 @@ class LocationForegroundService : Service() {
         super.onDestroy()
         fusedLocationClient.removeLocationUpdates(locationCallback)
         println("LocationForegroundService destroyed")
+    }
+
+    // Create a persistent notification for the foreground service
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val serviceChannel = NotificationChannel(
+                CHANNEL_ID,
+                "Location Tracking Service",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            val manager = getSystemService(NotificationManager::class.java)
+            manager?.createNotificationChannel(serviceChannel)
+        }
+    }
+
+    private fun createNotification(): Notification {
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Meal Mission")
+            .setContentText("Tracking your location...")
+            .setSmallIcon(R.drawable.ic_location)
+            .build()
     }
 }
 

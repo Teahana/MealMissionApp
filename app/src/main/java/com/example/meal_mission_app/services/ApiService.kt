@@ -72,6 +72,12 @@ interface ApiService {
         @Header("Authorization") authToken: String
     ): Response<StatusUpdateResponse>
 
+    @POST("/api/updateOrderStatusDelivering")
+    suspend fun updateOrderStatusDelivering(
+        @Body requestBody: Map<String,Any>,
+        @Header("Authorization") authToken: String
+    ): Response<StatusUpdateResponse>
+
     @POST("/api/submitOrder")
     suspend fun submitOrder(
         @Body requestBody: MutableMap<String,Any>,

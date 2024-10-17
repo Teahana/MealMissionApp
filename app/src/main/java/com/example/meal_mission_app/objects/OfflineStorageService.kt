@@ -102,6 +102,9 @@ object OfflineStorageService {
     fun getToken(context: Context): String? {
         return getPreferences(context).getString(TOKEN_KEY, null)
     }
+    fun getRestaurantId(context: Context): String? {
+        return getPreferences(context).getString(RESTAURANT_ID,null)
+    }
 
     fun getRefreshToken(context: Context): String? {
         return getPreferences(context).getString(REFRESH_TOKEN_KEY, null)

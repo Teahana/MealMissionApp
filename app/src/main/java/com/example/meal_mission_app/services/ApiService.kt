@@ -3,20 +3,16 @@ package com.example.meal_mission_app.services;
 import com.example.meal_mission_app.DTO.LoginResponse
 import com.example.meal_mission_app.DTO.RestaurantResponse
 import com.example.meal_mission_app.pages.customer.RestaurantDetailResponse
-import com.example.meal_mission_app.pages.customer.SaveUserLocationResponse
 import com.example.meal_mission_app.pages.customer.UserLocation
 import com.example.meal_mission_app.pages.restaurant.CustomerLiveOrder
 import com.example.meal_mission_app.pages.restaurant.CustomerOrderDto
-import com.example.meal_mission_app.pages.restaurant.CustomerOrderResponse
 import com.example.meal_mission_app.pages.restaurant.StatusUpdateResponse
-import com.google.android.gms.common.internal.Objects
 import com.google.gson.JsonObject
 import retrofit2.Response;
 import retrofit2.http.Body;
 import retrofit2.http.GET
 import retrofit2.http.Header;
 import retrofit2.http.POST;
-import retrofit2.http.Path
 import retrofit2.http.Url;
 
 interface ApiService {
@@ -49,9 +45,14 @@ interface ApiService {
     ): Response<RestaurantDetailResponse>
 
     @POST("/api/getLiveOrders")
-    suspend fun getLiveOrders(
+    suspend fun getRestaurantLiveOrders(
        @Header("Authorization") authToken: String,
        @Body requestBody: Map<String, String?>
+    ): Response<List<CustomerLiveOrder>>
+    @POST("/api/getCustomerLiveOrders")
+    suspend fun getCustomerLiveOrders(
+        @Header("Authorization") authToken: String,
+        @Body requestBody: Map<String, String?>
     ): Response<List<CustomerLiveOrder>>
 
     @POST("/api/getOrderDetails")
@@ -66,17 +67,18 @@ interface ApiService {
         @Header("Authorization") authToken: String
     ): Response<StatusUpdateResponse>
 
-    @POST("/api/updateOrderStatusReady")
-    suspend fun updateOrderStatusReady(
+    @POST("/api/orderStatusUpdateReady")
+    suspend fun orderStatusUpdateReady(
         @Body requestBody: JsonObject,
         @Header("Authorization") authToken: String
     ): Response<StatusUpdateResponse>
 
-    @POST("/api/updateOrderStatusDelivering")
-    suspend fun updateOrderStatusDelivering(
-        @Body requestBody: Map<String,Any>,
+    @POST("/api/orderStatusUpdateDelivering")
+    suspend fun orderStatusUpdateDelivering(
+        @Body requestBody: MutableMap<String, Any>,  // Changed to MutableMap
         @Header("Authorization") authToken: String
     ): Response<StatusUpdateResponse>
+
 
     @POST("/api/submitOrder")
     suspend fun submitOrder(
@@ -99,6 +101,20 @@ interface ApiService {
         @Body requestData: Map<String, String>,
         @Header("Authorization") token: String
     ): Response<Map<String, Any>>
+
+    @POST("/api/updateFcmToken")
+    suspend fun updateFcmToken(
+        @Body requestData: Map<String, String>,
+        @Header("Authorization") token: String?
+    ): Response<Map<String, Any>>
+
+    @POST("/api/getCustomerCompletedOrders")
+    suspend fun getCustomerCompletedOrders(
+        @Header("Authorization") authToken: String,
+        @Body requestBody: Map<String, String?>
+    ): Response<List<CustomerLiveOrder>>
+
+    abstract fun getCustomerCompletedOrders(): Any
 
 
 }

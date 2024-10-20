@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "370377163605",
+    "project_id": "mealmission-5fcd7",
+    "storage_bucket": "mealmission-5fcd7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:370377163605:android:1a0540f9ab2e4d4abd25dc",
+        "android_client_info": {
+          "package_name": "com.example.meal_mission_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjUrCIcdy0jn8h2jII-gvMMUcw37A_5o8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

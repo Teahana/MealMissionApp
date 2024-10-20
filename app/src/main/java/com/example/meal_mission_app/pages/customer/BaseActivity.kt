@@ -1,14 +1,9 @@
-package com.example.meal_mission_app.pages
+package com.example.meal_mission_app.pages.customer
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.meal_mission_app.R
-import com.example.meal_mission_app.pages.customer.CartActivity
-import com.example.meal_mission_app.pages.customer.CustomerActivity
-import com.example.meal_mission_app.pages.customer.CustomerHomepageActivity
-import com.example.meal_mission_app.pages.customer.ProfileActivity
-import com.example.meal_mission_app.pages.customer.RestaurantDetailsActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 open class BaseActivity : AppCompatActivity() {
@@ -36,13 +31,13 @@ open class BaseActivity : AppCompatActivity() {
                     }
                     true
                 }
-//                R.id.nav_orders -> {
-//                    if (this !is OrdersActivity) {
-//                        startActivity(Intent(this, OrdersActivity::class.java))
-//                        finish()
-//                    }
-//                    true
-//                }
+                R.id.nav_orders -> {
+                    if (this !is CustomerOrdersActivity) {
+                        startActivity(Intent(this, CustomerOrdersActivity::class.java))
+                        finish()
+                    }
+                    true
+                }
                 R.id.nav_profile -> {
                     if (this !is ProfileActivity) {
                         startActivity(Intent(this, ProfileActivity::class.java))

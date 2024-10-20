@@ -9,24 +9,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.meal_mission_app.R
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
-import com.example.meal_mission_app.pages.BaseActivity
-import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.UUID
 
 class RestaurantDetailsActivity : BaseActivity() {

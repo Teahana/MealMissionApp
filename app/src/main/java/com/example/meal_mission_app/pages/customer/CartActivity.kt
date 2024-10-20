@@ -13,13 +13,11 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.meal_mission_app.R
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
-import com.example.meal_mission_app.pages.BaseActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

@@ -14,7 +14,6 @@ import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.meal_mission_app.R
@@ -38,7 +37,6 @@ import org.json.JSONObject
 import retrofit2.HttpException
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
-import com.example.meal_mission_app.pages.BaseActivity
 
 class CustomerActivity : BaseActivity(), OnMapReadyCallback {
 

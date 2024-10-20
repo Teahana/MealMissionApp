@@ -79,7 +79,7 @@ class OrderListActivity : AppCompatActivity() {
         val restaurantId = OfflineStorageService.getRestaurantId(this)
         val requestBody = mapOf("restaurantId" to restaurantId.toString())
         try {
-            val response = NetworkClient.apiService.getLiveOrders(token,requestBody)
+            val response = NetworkClient.apiService.getRestaurantLiveOrders(token,requestBody)
             if (response.isSuccessful) {
                 val newOrders = response.body() ?: emptyList()
                 updateOrders(newOrders)

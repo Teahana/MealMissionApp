@@ -7,14 +7,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -28,7 +26,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.recreate
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -37,7 +34,6 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.meal_mission_app.R
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
-import com.example.meal_mission_app.pages.BaseActivity
 import com.example.meal_mission_app.pages.LoginActivity
 import com.example.meal_mission_app.services.LocationService
 import com.google.android.gms.common.api.ResolvableApiException

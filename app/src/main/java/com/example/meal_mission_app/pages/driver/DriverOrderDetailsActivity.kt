@@ -18,7 +18,6 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.example.meal_mission_app.R
 import com.example.meal_mission_app.helper.OrderStatus
 import com.example.meal_mission_app.objects.NetworkClient
@@ -288,15 +287,16 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun acceptOrder() {
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
-        val requestData = mapOf(
+        val driverId = OfflineStorageService.getUserId(this)
+        val requestData: MutableMap<String, Any> = mutableMapOf(
             "orderId" to orderId.toString(),
-            "driverId" to OfflineStorageService.getUserId(this).toString()
+            "driverId" to driverId.toString()
         )
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // Make the API call to update the order status to "Delivering"
-                val response = NetworkClient.apiService.updateOrderStatusDelivering(requestData, token)
+                val response = NetworkClient.apiService.orderStatusUpdateDelivering(requestData, token)
 
                 // Check if the response is successful (HTTP 2xx)
                 if (response.isSuccessful) {
@@ -335,6 +335,7 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
                 }
             } catch (e: Exception) {
+                println("BIGError: ${e.message}")
                 // Handle exceptions (e.g., network issues)
                 withContext(Dispatchers.Main) {
                     showToast("Error: ${e.localizedMessage}")

@@ -205,7 +205,7 @@ class OrderDetailsActivity : AppCompatActivity() {
         }
 
         try {
-            val response = NetworkClient.apiService.updateOrderStatusReady(requestBody, token)
+            val response = NetworkClient.apiService.orderStatusUpdateReady(requestBody, token)
             if (response.isSuccessful) {
                 val statusUpdateResponse = response.body()
                 if (statusUpdateResponse != null) {

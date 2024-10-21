@@ -240,10 +240,14 @@ data class CustomerOrderDto(
     val customerName: String,
     val restaurantId: Long,
     val restaurantName: String,
-   // val driverId: Long,
+    val restaurantLat: Double,
+    val restaurantLong: Double,
+    val restaurantAddress: String,
+    val driverId: Long,
+    val driverName: String?,
     val orderDate: LocalDate,
     val orderTime: LocalTime,
-    val status: String,
+    var status: String,
     val items: List<CustomerOrderItemDto>,
     val meals: List<CustomerOrderMealDto>
 )

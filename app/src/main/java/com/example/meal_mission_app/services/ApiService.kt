@@ -1,5 +1,6 @@
 package com.example.meal_mission_app.services;
 
+import com.example.meal_mission_app.DTO.Location
 import com.example.meal_mission_app.DTO.LoginResponse
 import com.example.meal_mission_app.DTO.RestaurantResponse
 import com.example.meal_mission_app.pages.customer.RestaurantDetailResponse
@@ -58,7 +59,7 @@ interface ApiService {
     @POST("/api/getOrderDetails")
     suspend fun getOrderDetails(
         @Body requestBody: Map<String, String?>,
-        @Header("Authorization") authToken: String
+        @Header("Authorization") authToken: String?
     ): Response<CustomerOrderDto>
 
     @POST("/api/orderStatusUpdateAccept")
@@ -114,7 +115,12 @@ interface ApiService {
         @Body requestBody: Map<String, String?>
     ): Response<List<CustomerLiveOrder>>
 
-    abstract fun getCustomerCompletedOrders(): Any
+    @POST("/api/getDriverLocation")
+    suspend fun getDriverLocation(
+        @Header("Authorization") authToken: String?,
+        @Body requestBody: Map<String, String?>
+    ): Response<Location>
+
 
 
 }

@@ -20,7 +20,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-// Define the CustomerOrdersActivity, which extends BaseActivity
 class CustomerOrdersActivity : BaseActivity() {
 
     private lateinit var tabLayout: TabLayout
@@ -32,14 +31,13 @@ class CustomerOrdersActivity : BaseActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_customer_orders)
-
+        layoutInflater.inflate(R.layout.activity_customer_orders, findViewById(R.id.activity_content))
         tabLayout = findViewById(R.id.tab_layout)
         recyclerView = findViewById(R.id.customerRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        // Set up adapter
-        orderAdapter = CustomerOrderAdapter(liveOrders) { orderId ->
+        // Initialize with empty adapter
+        orderAdapter = CustomerOrderAdapter(emptyList()) { orderId ->
             onOrderClick(orderId)
         }
         recyclerView.adapter = orderAdapter
@@ -48,8 +46,16 @@ class CustomerOrdersActivity : BaseActivity() {
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 when (tab?.position) {
-                    0 -> loadLiveOrders()
-                    1 -> loadCompletedOrders()
+                    0 -> {
+                        // Clear the adapter immediately when switching to live orders
+                        clearAdapter()
+                        loadLiveOrders()
+                    }
+                    1 -> {
+                        // Clear the adapter immediately when switching to completed orders
+                        clearAdapter()
+                        loadCompletedOrders()
+                    }
                 }
             }
 
@@ -61,25 +67,36 @@ class CustomerOrdersActivity : BaseActivity() {
         loadLiveOrders()
     }
 
+    override fun getSelectedItemId(): Int {
+        return R.id.nav_orders // This makes the "Orders" tab selected when in CustomerOrdersActivity
+    }
+
     private fun onOrderClick(orderId: Long) {
         val intent = Intent(this, CustomerOrderDetailsActivity::class.java)
         intent.putExtra("orderId", orderId)
         startActivity(intent)
     }
 
+    private fun clearAdapter() {
+        // Clear the adapter and update the RecyclerView with an empty list
+        orderAdapter.updateOrders(emptyList())
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun loadLiveOrders() {
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
         val userId = OfflineStorageService.getUserId(this)
-        val requestData = mapOf("userId" to userId.toString())
+        val requestData = mapOf("customerId" to userId.toString())
 
-        // Update the adapter to display live orders
+        // Clear the live orders list before fetching new data
+        liveOrders.clear()
+
+        // Fetch live orders from the API
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = NetworkClient.apiService.getCustomerLiveOrders(token,requestData)
+                val response = NetworkClient.apiService.getCustomerLiveOrders(token, requestData)
                 if (response.isSuccessful) {
                     val orders = response.body() ?: emptyList()
-                    liveOrders.clear()
                     liveOrders.addAll(orders)
 
                     runOnUiThread {
@@ -96,15 +113,17 @@ class CustomerOrdersActivity : BaseActivity() {
     private fun loadCompletedOrders() {
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
         val userId = OfflineStorageService.getUserId(this)
-        val requestData = mapOf("userId" to userId.toString())
+        val requestData = mapOf("customerId" to userId.toString())
 
-        // Update the adapter to display completed orders
+        // Clear the completed orders list before fetching new data
+        completedOrders.clear()
+
+        // Fetch completed orders from the API
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = NetworkClient.apiService.getCustomerCompletedOrders(token,requestData)
+                val response = NetworkClient.apiService.getCustomerCompletedOrders(token, requestData)
                 if (response.isSuccessful) {
                     val orders = response.body() ?: emptyList()
-                    completedOrders.clear()
                     completedOrders.addAll(orders)
 
                     runOnUiThread {

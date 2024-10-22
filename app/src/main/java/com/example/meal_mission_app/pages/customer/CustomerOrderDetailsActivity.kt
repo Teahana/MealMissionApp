@@ -1,5 +1,6 @@
 package com.example.meal_mission_app.pages.customer
 
+import android.content.pm.PackageManager
 import com.example.meal_mission_app.R
 import android.graphics.Color
 import android.os.Build
@@ -89,7 +90,7 @@ class CustomerOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         lifecycleScope.launch {
-            val authToken = OfflineStorageService.getToken(this@CustomerOrderDetailsActivity)
+            val authToken = "Bearer ${OfflineStorageService.getToken(this@CustomerOrderDetailsActivity)}"
             val requestBody = mapOf("orderId" to orderId.toString())
             try {
                 val response = NetworkClient.apiService.getOrderDetails(requestBody, authToken)
@@ -176,8 +177,12 @@ class CustomerOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun drawRouteBetweenCustomerAndRestaurant(order: CustomerOrderDto) {
-        val customerLatLng = LatLng(order.latitude, order.longitude)
-        val restaurantLatLng = LatLng(order.restaurantLat, order.restaurantLong)
+       val customerLatLng = LatLng(order.latitude, order.longitude)
+       // val customerLatLng = LatLng(-18.106658, 178.447914)
+       val restaurantLatLng = LatLng(order.restaurantLat, order.restaurantLong)
+       // val restaurantLatLng = LatLng(-18.147491, 178.448266)
+
+
 
         // Clear existing markers and polylines
         googleMap.clear()
@@ -219,8 +224,12 @@ class CustomerOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun getDirectionsUrl(origin: LatLng, dest: LatLng): String {
         val originLatLng = "${origin.latitude},${origin.longitude}"
         val destLatLng = "${dest.latitude},${dest.longitude}"
-        val apiKey = getString(R.string.google_api_key)
+        val apiKey = getGoogleMapsApiKey()
         return "https://maps.googleapis.com/maps/api/directions/json?origin=$originLatLng&destination=$destLatLng&key=$apiKey"
+    }
+    private fun getGoogleMapsApiKey(): String {
+        val appInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+        return appInfo.metaData.getString("com.google.android.geo.API_KEY", "")
     }
 
     private suspend fun downloadUrl(strUrl: String): String {
@@ -316,7 +325,7 @@ class CustomerOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                 "driverId" to order.driverId.toString(),
                 "orderId" to order.orderId.toString()
             )
-            val authToken = OfflineStorageService.getToken(this@CustomerOrderDetailsActivity)
+            val authToken = "Bearer ${OfflineStorageService.getToken(this@CustomerOrderDetailsActivity)}"
             lifecycleScope.launch {
                 try {
                     val response = NetworkClient.apiService.getDriverLocation(authToken, requestBody)

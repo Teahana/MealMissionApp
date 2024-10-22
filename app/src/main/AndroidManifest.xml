@@ -64,6 +64,11 @@
             android:label="CustomerOrderListActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
         <activity
+            android:name=".pages.customer.CustomerOrderDetailsActivity"
+            android:exported="true"
+            android:label="CustomerOrderDetailsActivity"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+        <activity
             android:name=".pages.customer.PaymentActivity"
             android:exported="true"
             android:label="CustomerHomepage"

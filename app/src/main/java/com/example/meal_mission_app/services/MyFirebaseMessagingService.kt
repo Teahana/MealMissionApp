@@ -20,6 +20,7 @@ import com.google.firebase.messaging.RemoteMessage
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
 import com.example.meal_mission_app.pages.LoginActivity
+import com.example.meal_mission_app.pages.customer.CustomerOrderDetailsActivity
 import com.example.meal_mission_app.pages.driver.DriverOrderListActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -86,20 +87,27 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             Log.d(TAG, "Message Data Payload: $payload")
 
             // Extract custom data and perform the desired action
-//            val activityToLaunch = payload["activity"]
-//            val orderId = payload["orderId"]
-//
-//            if (activityToLaunch != null && orderId != null) {
-//                // Handle navigation to a specific activity based on the received data
-//                navigateToActivity(activityToLaunch, orderId)
-//            }
+            val activityToLaunch = payload["activity"]
+            val orderId = payload["orderId"]
+
+            if (activityToLaunch != null && orderId != null) {
+                // Handle navigation to a specific activity based on the received data
+                navigateToActivity(activityToLaunch, orderId)
+            }
         }
     }
     private fun navigateToActivity(activity: String, orderId: String) {
         when (activity) {
+            "CustomerOrderDetailsActivity" -> {
+                val intent = Intent(this, CustomerOrderDetailsActivity::class.java).apply {
+                    putExtra("orderId", orderId.toLong()) // Pass the order ID
+                }
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+            }
             "DriverOrderActivity" -> {
                 val intent = Intent(this, DriverOrderListActivity::class.java).apply {
-                    putExtra("ORDER_ID", orderId)
+                    putExtra("ORDER_ID", orderId.toLong()) // Pass the order ID
                 }
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)

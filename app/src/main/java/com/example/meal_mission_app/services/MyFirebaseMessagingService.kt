@@ -78,53 +78,54 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             Log.d(TAG, "Message Notification Title: ${it.title}")
             Log.d(TAG, "Message Notification Body: ${it.body}")
 
-            // Handle the notification payload (title, body)
-            showNotification(it.title, it.body)
-        }
+            // Check if the message contains data payload.
+            val activityToLaunch = remoteMessage.data["activity"]
+            val orderId = remoteMessage.data["orderId"]
 
-        // Check if the message contains data payload.
-        remoteMessage.data?.let { payload ->
-            Log.d(TAG, "Message Data Payload: $payload")
+            println("Activity to launch: $activityToLaunch")
+            println("Order ID: $orderId")
 
-            // Extract custom data and perform the desired action
-            val activityToLaunch = payload["activity"]
-            val orderId = payload["orderId"]
-
-            if (activityToLaunch != null && orderId != null) {
-                // Handle navigation to a specific activity based on the received data
-                navigateToActivity(activityToLaunch, orderId)
-            }
+            // Handle the notification payload and pass the data for intent
+            showNotification(it.title, it.body, activityToLaunch, orderId)
         }
     }
-    private fun navigateToActivity(activity: String, orderId: String) {
-        when (activity) {
-            "CustomerOrderDetailsActivity" -> {
-                val intent = Intent(this, CustomerOrderDetailsActivity::class.java).apply {
-                    putExtra("orderId", orderId.toLong()) // Pass the order ID
-                }
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-            }
-            "DriverOrderActivity" -> {
-                val intent = Intent(this, DriverOrderListActivity::class.java).apply {
-                    putExtra("ORDER_ID", orderId.toLong()) // Pass the order ID
-                }
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-            }
-            // Handle other activities if necessary
-        }
-    }
+
 
     // Function to display a notification
-    private fun showNotification(title: String?, message: String?) {
+    private fun showNotification(
+        title: String?,
+        message: String?,
+        activityToLaunch: String?,
+        orderId: String?
+    ) {
         val notificationId = System.currentTimeMillis().toInt() // Unique notification ID
 
-        // Create an intent to launch the app when the notification is tapped
-        val intent = Intent(this, LoginActivity::class.java) // Change to the activity you want to open
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        // Intent will be dynamically set based on the activity sent from the server
+        val intent = when (activityToLaunch) {
+            "CustomerOrderDetailsActivity" -> {
+                Intent(this, CustomerOrderDetailsActivity::class.java).apply {
+                    putExtra("orderId", orderId?.toLong()) // Pass the order ID
+                }
+            }
+            "DriverOrderActivity" -> {
+                Intent(this, DriverOrderListActivity::class.java).apply {
+                    putExtra("ORDER_ID", orderId?.toLong()) // Pass the order ID
+                }
+            }
+            else -> {
+                // Default case: if no specific activity is defined, navigate to LoginActivity
+                Intent(this, LoginActivity::class.java)
+            }
+        }
 
-        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         // Notification channel ID (required for Android 8.0 and above)
         val channelId = "fcm_default_channel"
@@ -166,4 +167,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             NotificationManagerCompat.from(this).notify(notificationId, notificationBuilder.build())
         }
     }
+
+
 }

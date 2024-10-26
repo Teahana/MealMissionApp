@@ -10,7 +10,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.Html
 import android.view.MenuItem
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -200,6 +202,7 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun fetchOrderDetails() {
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
         val requestData = mapOf("orderId" to orderId.toString())
+        val driverId = OfflineStorageService.getUserId(this)
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -207,13 +210,22 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (response.isSuccessful) {
                     response.body()?.let { orderDto ->
                         withContext(Dispatchers.Main) {
-                            if (orderDto.status == OrderStatus.DELIVERING.toString()) {
+                            if (orderDto.status == OrderStatus.DELIVERING.toString() && !orderDto.driverId.toString().equals(driverId)) {
                                 // Show toast to notify driver and redirect to the previous page
                                 showToast("Order already accepted by another driver.")
                                 // Redirect to the previous page
                                 finish() // This will close the current activity and go back to the previous one
                             } else {
-                                handleOrderDetails(orderDto) // Proceed if the order is not already delivering
+                                if(orderDto.status == OrderStatus.DELIVERING.toString()){
+                                    buttonAccept.isEnabled = false
+                                    buttonDelivered.isEnabled = true
+                                }
+                                else if(orderDto.status == OrderStatus.DELIVERED.toString()){
+                                    buttonAccept.isEnabled = false
+                                    buttonDelivered.isEnabled = false
+                                    mapView.visibility = View.GONE
+                                }
+                                handleOrderDetails(orderDto)
                             }
                         }
                     }
@@ -231,32 +243,34 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun handleOrderDetails(order: CustomerOrderDto) {
-        val itemsDetails = order.items.joinToString("\n") { item ->
-            "${item.quantity} x ${item.itemName} (\$${item.itemPrice})"
+        // Formatting items and meals details in a list format
+        val itemsDetails = order.items.joinToString("<br>") { item ->
+            "<b>${item.quantity} x</b> ${item.itemName} (\$${item.itemPrice})"
         }
 
-        val mealsDetails = order.meals.joinToString("\n") { meal ->
-            "${meal.quantity} x ${meal.mealName} (\$${meal.mealPrice})"
+        val mealsDetails = order.meals.joinToString("<br>") { meal ->
+            "<b>${meal.quantity} x</b> ${meal.mealName} (\$${meal.mealPrice})"
         }
 
+        // Creating a structured layout with HTML-like format
         val orderDetailsText = """
-        Customer: ${order.customerName}
-        Address: ${order.customerAddress}
-        Directions: ${order.locationDirections}
-        Order Date: ${order.orderDate}
-        Order Time: ${order.orderTime}
-        
-        Items:
-        $itemsDetails
-        
-        Meals:
-        $mealsDetails
-        
-        Total Price: \$${order.totalPrice}
+        <b>Customer:</b> ${order.customerName} <br>
+        <b>Address:</b> ${order.customerAddress} <br>
+        <b>Directions:</b> ${order.locationDirections ?: "N/A"} <br>
+        <b>Order Date:</b> ${order.orderDate} <br>
+        <b>Order Time:</b> ${order.orderTime} <br>
+        <br>
+        <b>Items:</b> <br>
+        $itemsDetails <br>
+        <br>
+        <b>Meals:</b> <br>
+        $mealsDetails <br>
+        <br>
+        <b>Total Price:</b> <font color='#FF5722'>$${order.totalPrice}</font>
     """.trimIndent()
 
-        // Set text to the TextView
-        textViewOrderDetails.text = orderDetailsText
+        // Applying HTML formatting to the TextView
+        textViewOrderDetails.text = Html.fromHtml(orderDetailsText, Html.FROM_HTML_MODE_LEGACY)
 
         customerLatitude = order.latitude
         customerLongitude = order.longitude
@@ -271,6 +285,7 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Start fetching driver's location after customer location is set
         fetchDriverLocation()
     }
+
 
     private fun updateCameraToFitLocations(driverLatLng: LatLng, customerLatLng: LatLng) {
         val builder = LatLngBounds.builder()
@@ -350,10 +365,55 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun deliverOrder() {
-        stopService(Intent(this, LocationForegroundService::class.java))
-        showToast("Order delivered")
-        finish()
+        val token = "Bearer ${OfflineStorageService.getToken(this)}"
+        val driverId = OfflineStorageService.getUserId(this)
+        val requestData: MutableMap<String, Any> = mutableMapOf(
+            "orderId" to orderId.toString(),
+            "driverId" to driverId.toString()
+        )
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Make the API call to update the order status to "Delivered"
+                val response = NetworkClient.apiService.orderStatusUpdateDelivered(requestData, token)
+
+                // Check if the response is successful (HTTP 2xx)
+                if (response.isSuccessful) {
+                    withContext(Dispatchers.Main) {
+                        // Stop the ForegroundService for sending the driver's location to the server
+                        stopService(Intent(this@DriverOrderDetailsActivity, LocationForegroundService::class.java))
+
+                        buttonDelivered.isEnabled = false
+                        showToast("Order delivered successfully!")
+                        finish() // Close the activity
+                    }
+                }
+                // Handle the case where the order was already marked as delivered (HTTP 409)
+                else if (response.code() == 409) {
+                    withContext(Dispatchers.Main) {
+                        val statusResponse = response.body() // Parse the response body
+                        if (statusResponse?.status == OrderStatus.DUPLICATE.toString()) {
+                            showToast("Order already delivered.")
+                            finish() // Go back to the previous screen
+                        }
+                    }
+                }
+                // Handle other errors
+                else {
+                    withContext(Dispatchers.Main) {
+                        showToast("Failed to mark order as delivered: ${response.message()}")
+                    }
+                }
+            } catch (e: Exception) {
+                println("BIGError: ${e.message}")
+                // Handle exceptions (e.g., network issues)
+                withContext(Dispatchers.Main) {
+                    showToast("Error: ${e.localizedMessage}")
+                }
+            }
+        }
     }
+
 
     private fun startLocationUpdates() {
         handler.postDelayed(object : Runnable {

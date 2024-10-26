@@ -50,6 +50,11 @@ interface ApiService {
        @Header("Authorization") authToken: String,
        @Body requestBody: Map<String, String?>
     ): Response<List<CustomerLiveOrder>>
+    @POST("/api/getCompletedOrders")
+    suspend fun getRestaurantCompletedOrders(
+        @Header("Authorization") token: String,
+        @Body requestBody: Map<String, String>
+    ): Response<List<CustomerLiveOrder>>
     @POST("/api/getCustomerLiveOrders")
     suspend fun getCustomerLiveOrders(
         @Header("Authorization") authToken: String,
@@ -80,6 +85,11 @@ interface ApiService {
         @Header("Authorization") authToken: String
     ): Response<StatusUpdateResponse>
 
+    @POST("/api/orderStatusUpdateDelivered")
+    suspend fun orderStatusUpdateDelivered(
+        @Body requestBody: MutableMap<String, Any>,
+        @Header("Authorization") authToken: String
+    ): Response<StatusUpdateResponse>
 
     @POST("/api/submitOrder")
     suspend fun submitOrder(
@@ -121,6 +131,17 @@ interface ApiService {
         @Body requestBody: Map<String, String?>
     ): Response<Location>
 
+    @POST("/api/getCompletedOrdersDriver")
+    suspend fun getDriverCompletedOrders(
+        @Body requestBody: Map<String, String?>,
+        @Header("Authorization") authToken: String
+    ): Response<List<CustomerLiveOrder>>
+
+    @POST("/api/getDriverProfile")
+    suspend fun getDriverProfile(
+        @Body requestBody: Map<String, String?>,
+        @Header("Authorization") authToken: String
+    ): Response<Map<String,Any>>
 
 
 }

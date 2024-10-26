@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalTime
 
-class OrderDetailsActivity : AppCompatActivity() {
+class RestaurantOrderDetailsActivity : AppCompatActivity() {
     private lateinit var textViewOrderId: TextView
     private lateinit var textViewOrderStatus: TextView
     private lateinit var textViewOrderDateTime: TextView
@@ -130,12 +130,12 @@ class OrderDetailsActivity : AppCompatActivity() {
                 }
             } else {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@OrderDetailsActivity, "Failed to fetch order details", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@RestaurantOrderDetailsActivity, "Failed to fetch order details", Toast.LENGTH_SHORT).show()
                 }
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(this@OrderDetailsActivity, "Error fetching order details: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@RestaurantOrderDetailsActivity, "Error fetching order details: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -169,30 +169,30 @@ class OrderDetailsActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         when (OrderStatus.valueOf(statusUpdateResponse.status)) {
                             OrderStatus.ACCEPTED -> {
-                                textViewOrderStatus.text = "Order status: ${statusUpdateResponse.statusMessage}"
-                                Toast.makeText(this@OrderDetailsActivity, "Order status updated: ${statusUpdateResponse.status}", Toast.LENGTH_SHORT).show()
+                                textViewOrderStatus.text = statusUpdateResponse.status
+                                Toast.makeText(this@RestaurantOrderDetailsActivity, statusUpdateResponse.statusMessage, Toast.LENGTH_SHORT).show()
                                 buttonAcceptOrder.isEnabled = false
                                 buttonOrderReady.isEnabled = true
                             }
                             OrderStatus.DUPLICATE -> {
-                                textViewOrderStatus.text = "Order status: ${statusUpdateResponse.statusMessage}"
-                                Toast.makeText(this@OrderDetailsActivity, "Order already accepted", Toast.LENGTH_SHORT).show()
+                          //      textViewOrderStatus.text = "Order status: ${statusUpdateResponse.statusMessage}"
+                                Toast.makeText(this@RestaurantOrderDetailsActivity, "Order already accepted", Toast.LENGTH_SHORT).show()
                                 buttonAcceptOrder.isEnabled = false
                             }
                             else -> {
-                                Toast.makeText(this@OrderDetailsActivity, "Unknown status: ${statusUpdateResponse.status}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this@RestaurantOrderDetailsActivity, "Unknown status: ${statusUpdateResponse.status}", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
                 }
             } else {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@OrderDetailsActivity, "Failed to update order status", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@RestaurantOrderDetailsActivity, "Failed to update order status", Toast.LENGTH_SHORT).show()
                 }
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(this@OrderDetailsActivity, "Error updating order status: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@RestaurantOrderDetailsActivity, "Error updating order status: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -210,19 +210,19 @@ class OrderDetailsActivity : AppCompatActivity() {
                 val statusUpdateResponse = response.body()
                 if (statusUpdateResponse != null) {
                     withContext(Dispatchers.Main) {
-                        textViewOrderStatus.text = statusUpdateResponse.statusMessage
-                        Toast.makeText(this@OrderDetailsActivity, "Order is ready: ${statusUpdateResponse.status}", Toast.LENGTH_SHORT).show()
+                        textViewOrderStatus.text = statusUpdateResponse.status
+                        Toast.makeText(this@RestaurantOrderDetailsActivity, statusUpdateResponse.statusMessage, Toast.LENGTH_SHORT).show()
                         buttonOrderReady.isEnabled = false
                     }
                 }
             } else {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@OrderDetailsActivity, "Failed to mark order as ready", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@RestaurantOrderDetailsActivity, "Failed to mark order as ready", Toast.LENGTH_SHORT).show()
                 }
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(this@OrderDetailsActivity, "Error marking order as ready: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@RestaurantOrderDetailsActivity, "Error marking order as ready: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

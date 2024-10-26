@@ -62,7 +62,7 @@ import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.util.Locale
 
-class ProfileActivity : BaseActivity() {
+class ProfileActivityCustomer : CustomerBaseActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,7 +92,7 @@ class ProfileActivity : BaseActivity() {
 
     private fun logoutUser() {
         // Clear user data from offline storage
-       // OfflineStorageService.clearUserCredentials(this)
+       OfflineStorageService.clearUserCredentials(this)
 
         // Navigate back to the login activity
         val intent = Intent(this, LoginActivity::class.java)

@@ -13,13 +13,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import com.example.meal_mission_app.R
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
-import com.example.meal_mission_app.pages.customer.CustomerHomepageActivity
+import com.example.meal_mission_app.pages.customer.CustomerHomepageActivityCustomer
 import com.example.meal_mission_app.pages.driver.DriverOrderListActivity
-import com.example.meal_mission_app.pages.restaurant.OrderListActivity
+import com.example.meal_mission_app.pages.restaurant.RestaurantOrderListActivity
+//import com.example.meal_mission_app.pages.restaurant.RestaurantOrderListActivity
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -99,6 +99,7 @@ class LoginActivity : AppCompatActivity() {
             }
 
             // Get the FCM token
+            println("FCM FETCHED SUCCESSFFULLY F")
             val fcmToken = task.result
 
             // Now, perform the login with FCM token included
@@ -134,8 +135,8 @@ class LoginActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         when (userType) {
                             "DRIVER" -> startActivity(Intent(this@LoginActivity, DriverOrderListActivity::class.java))
-                            "RESTAURANT" -> startActivity(Intent(this@LoginActivity, OrderListActivity::class.java))
-                            "CUSTOMER" -> startActivity(Intent(this@LoginActivity, CustomerHomepageActivity::class.java))
+                            "RESTAURANT" -> startActivity(Intent(this@LoginActivity, RestaurantOrderListActivity::class.java))
+                            "CUSTOMER" -> startActivity(Intent(this@LoginActivity, CustomerHomepageActivityCustomer::class.java))
                             else -> Toast.makeText(this@LoginActivity, "Unknown user type", Toast.LENGTH_SHORT).show()
                         }
                         finish()

@@ -3,6 +3,7 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- Toolbar at the top -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -11,6 +12,7 @@
         android:title="Order Details"
         android:titleTextColor="@android:color/white" />
 
+    <!-- Order details text view -->
     <TextView
         android:id="@+id/textViewOrderDetails"
         android:layout_width="match_parent"
@@ -20,26 +22,31 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp" />
 
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/mapView"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_below="@id/textViewOrderDetails"
-        android:layout_marginBottom="16dp" />
-
+    <!-- Button to accept the order -->
     <Button
         android:id="@+id/buttonAccept"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Accept"
-        android:layout_below="@id/mapView"
+        android:layout_below="@id/textViewOrderDetails"
         android:layout_marginBottom="8dp" />
 
+    <!-- Button to mark the order as delivered -->
     <Button
         android:id="@+id/buttonDelivered"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Delivered"
         android:layout_below="@id/buttonAccept"
+        android:layout_marginBottom="16dp"
         android:enabled="false" />
+
+    <!-- MapView positioned below the buttons -->
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_below="@id/buttonDelivered"
+        android:layout_marginBottom="16dp" />
+
 </RelativeLayout>

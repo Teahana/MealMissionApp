@@ -1,129 +1,63 @@
 package com.example.meal_mission_app.pages.restaurant
 
-import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.meal_mission_app.R
-import com.example.meal_mission_app.objects.NetworkClient
-import com.example.meal_mission_app.objects.OfflineStorageService
-import kotlinx.coroutines.*
+import com.google.android.material.tabs.TabLayoutMediator
+import androidx.viewpager2.widget.ViewPager2
+import com.example.meal_mission_app.helper.OrderStatus
 import java.time.LocalDate
 import java.time.LocalTime
 
-data class CustomerOrderResponse(
-    val orders: List<CustomerOrderDto>
-)
-data class CustomerLiveOrder(
-    val orderId: Long,
-    val orderStatus: String,
-    val orderDate: LocalDate,
-    val orderTime: LocalTime,
-    val orderDistance: String?
-)
+class RestaurantOrderListActivity : AppCompatActivity() {
+    private lateinit var viewPager: ViewPager2
+    private lateinit var pagerAdapter: OrdersPagerAdapter
 
-class OrderListActivity : AppCompatActivity() {
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var orderAdapter: OrderAdapter
-    private val orders = mutableListOf<CustomerLiveOrder>()
-    private var pollingJob: Job? = null
-
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Set the content view to the layout containing TabLayout and ViewPager2
         setContentView(R.layout.activity_order_list)
 
-        recyclerView = findViewById(R.id.recyclerViewOrders)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        orderAdapter = OrderAdapter(orders) { orderId, orderStatus ->
-            val intent = Intent(this, OrderDetailsActivity::class.java)
-            intent.putExtra("ORDER_ID", orderId)
-            intent.putExtra("ORDER_STATUS", orderStatus)
-            startActivity(intent)
-        }
-        recyclerView.adapter = orderAdapter
+        viewPager = findViewById(R.id.viewPager)
+        pagerAdapter = OrdersPagerAdapter(this)
+        viewPager.adapter = pagerAdapter
 
-        startPolling()
-    }
-    override fun onStop() {
-        super.onStop()
-        pollingJob?.cancel()  // Cancel the polling when the app goes to the background
-    }
+        val tabLayout = findViewById<com.google.android.material.tabs.TabLayout>(R.id.tabLayout)
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    override fun onResume() {
-        super.onResume()
-        startPolling()  // Restart the polling when the app comes back to the foreground
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun startPolling() {
-        pollingJob = CoroutineScope(Dispatchers.Default).launch {
-            while (isActive) {
-                fetchLiveOrders()
-                delay(10000) // 10 seconds delay
-            }
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private suspend fun fetchLiveOrders() {
-        val token = "Bearer ${OfflineStorageService.getToken(this)}"
-        val restaurantId = OfflineStorageService.getRestaurantId(this)
-        val requestBody = mapOf("restaurantId" to restaurantId.toString())
-        try {
-            val response = NetworkClient.apiService.getRestaurantLiveOrders(token,requestBody)
-            if (response.isSuccessful) {
-                val newOrders = response.body() ?: emptyList()
-                updateOrders(newOrders)
-            } else {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@OrderListActivity, "Failed to fetch live orders", Toast.LENGTH_SHORT).show()
-                }
-            }
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(this@OrderListActivity, "Error fetching live orders: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-            println("Error:" + e.message)
-        }
-    }
-
-    private fun updateOrders(newOrders: List<CustomerLiveOrder>) {
-        val updatedOrders = newOrders.toMutableList()
-
-        if (updatedOrders != orders) {
-            orders.clear()
-            orders.addAll(updatedOrders)
-            CoroutineScope(Dispatchers.Main).launch {
-                orderAdapter.notifyDataSetChanged()
-            }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        pollingJob?.cancel()
+        TabLayoutMediator(tabLayout, viewPager) { tab, position ->
+            tab.text = if (position == 0) "Live Orders" else "Completed Orders"
+        }.attach()
     }
 }
+class OrdersPagerAdapter(activity: AppCompatActivity) : FragmentStateAdapter(activity) {
+    override fun getItemCount(): Int = 2 // We have two fragments
 
+    override fun createFragment(position: Int): Fragment {
+        return if (position == 0) {
+            LiveOrdersFragment()
+        } else {
+            CompletedOrdersFragment()
+        }
+    }
+}
 class OrderAdapter(
     private val orders: List<CustomerLiveOrder>,
     private val onItemClick: (Long, String) -> Unit
 ) : RecyclerView.Adapter<OrderAdapter.OrderViewHolder>() {
 
-    class OrderViewHolder(itemView: android.view.View) : RecyclerView.ViewHolder(itemView) {
+    class OrderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textViewOrderId: TextView = itemView.findViewById(R.id.textViewOrderId)
         val textViewOrderStatus: TextView = itemView.findViewById(R.id.textViewOrderStatus)
         val textViewOrderDateTime: TextView = itemView.findViewById(R.id.textViewOrderDateTime)
         val textViewOrderDistance: TextView = itemView.findViewById(R.id.textViewOrderDistance)
+        val textViewPrice: TextView = itemView.findViewById(R.id.textViewOrderPrice)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
@@ -136,13 +70,42 @@ class OrderAdapter(
         holder.textViewOrderId.text = "Order #${order.orderId}"
         holder.textViewOrderStatus.text = order.orderStatus
         holder.textViewOrderDateTime.text = "Date: ${order.orderDate} \nTime: ${order.orderTime}"
-        if(order.orderDistance != null){
+        if (order.orderDistance != null) {
             holder.textViewOrderDistance.text = "${order.orderDistance}"
+            holder.textViewOrderDistance.visibility = View.VISIBLE
+        } else {
+            holder.textViewOrderDistance.visibility = View.GONE
         }
         holder.itemView.setOnClickListener {
             onItemClick(order.orderId, order.orderStatus)
+        }
+//        if(order.orderStatus == OrderStatus.DELIVERING.toString()
+//            || order.orderStatus == OrderStatus.DELIVERED.toString()
+//            || order.orderStatus == OrderStatus.READY.toString()){
+//            holder.textViewPrice.visibility = View.VISIBLE
+//            holder.textViewPrice.text = "$${order.price}"
+//        }else{
+//            holder.textViewPrice.visibility = View.GONE
+//        }
+        if(order.price > 0){
+            holder.textViewPrice.visibility = View.VISIBLE
+            holder.textViewPrice.text = "$${order.price}"
+        }else{
+            holder.textViewPrice.visibility = View.GONE
         }
     }
 
     override fun getItemCount() = orders.size
 }
+data class CustomerOrderResponse(
+    val orders: List<CustomerOrderDto>
+)
+
+data class CustomerLiveOrder(
+    val orderId: Long,
+    val orderStatus: String,
+    val orderDate: LocalDate,
+    val orderTime: LocalTime,
+    val orderDistance: String?,
+    val price: Double
+)

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".pages.customer.CustomerOrdersActivity">
+    tools:context=".pages.customer.CustomerOrdersActivityCustomer">
 
     <!-- Tab Layout for switching between live and completed orders -->
     <com.google.android.material.tabs.TabLayout

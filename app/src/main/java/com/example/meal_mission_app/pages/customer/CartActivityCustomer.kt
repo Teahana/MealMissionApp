@@ -23,7 +23,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class CartActivity : BaseActivity() {
+class CartActivityCustomer : CustomerBaseActivity() {
 
     private lateinit var locationSpinner: Spinner
     private lateinit var locationAdapter: ArrayAdapter<String>
@@ -96,14 +96,14 @@ class CartActivity : BaseActivity() {
                     withContext(Dispatchers.Main) {
                         if (response.isSuccessful) {
                             successfullySubmittedOrders.add(cart.offlineId)
-                            Toast.makeText(this@CartActivity, "Order ${cart.offlineId} submitted successfully!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@CartActivityCustomer, "Order ${cart.offlineId} submitted successfully!", Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(this@CartActivity, "Failed to submit order: ${cart.offlineId}.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@CartActivityCustomer, "Failed to submit order: ${cart.offlineId}.", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(this@CartActivity, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@CartActivityCustomer, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -111,10 +111,10 @@ class CartActivity : BaseActivity() {
             // After processing all orders, delete the successfully submitted orders
             withContext(Dispatchers.Main) {
                 successfullySubmittedOrders.forEach { offlineId ->
-                    OfflineStorageService.removeCartByOfflineId(this@CartActivity, offlineId)
+                    OfflineStorageService.removeCartByOfflineId(this@CartActivityCustomer, offlineId)
                 }
                 // Refresh the cart list and notify adapter
-                cartList = OfflineStorageService.getCartList(this@CartActivity)
+                cartList = OfflineStorageService.getCartList(this@CartActivityCustomer)
                 cartAdapter.updateCartList(cartList)
             }
         }
@@ -142,12 +142,12 @@ class CartActivity : BaseActivity() {
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(this@CartActivity, "Failed to fetch locations.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@CartActivityCustomer, "Failed to fetch locations.", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@CartActivity, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@CartActivityCustomer, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
                 }
             }
         }

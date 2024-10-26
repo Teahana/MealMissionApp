@@ -21,7 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class CustomerHomepageActivity : BaseActivity() {
+class CustomerHomepageActivityCustomer : CustomerBaseActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: RestaurantAdapter
@@ -67,13 +67,13 @@ class CustomerHomepageActivity : BaseActivity() {
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(this@CustomerHomepageActivity, "Failed to fetch restaurants", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@CustomerHomepageActivityCustomer, "Failed to fetch restaurants", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 println("Error: " + e.message)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@CustomerHomepageActivity, "Error fetching restaurants", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@CustomerHomepageActivityCustomer, "Error fetching restaurants", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -89,7 +89,7 @@ class CustomerHomepageActivity : BaseActivity() {
     }
 
     private fun openRestaurantDetails(restaurant: RestaurantResponse) {
-        val intent = Intent(this, RestaurantDetailsActivity::class.java)
+        val intent = Intent(this, RestaurantDetailsActivityCustomer::class.java)
         intent.putExtra("restaurantName", restaurant.name)
         intent.putExtra("restaurantDescription", restaurant.description)
         intent.putExtra("restaurantAddress", restaurant.address)

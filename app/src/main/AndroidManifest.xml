@@ -41,25 +41,25 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!-- Customer home pgae -->
+        <!-- Customer pages -->
 
         <activity
-            android:name=".pages.customer.CustomerActivity"
+            android:name=".pages.customer.CustomerActivityCustomer"
             android:exported="true"
             android:label="Customer"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
-            android:name=".pages.customer.CustomerHomepageActivity"
+            android:name=".pages.customer.CustomerHomepageActivityCustomer"
             android:exported="true"
             android:label="CustomerHomepage"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
-            android:name=".pages.customer.CartActivity"
+            android:name=".pages.customer.CartActivityCustomer"
             android:exported="true"
             android:label="CustomerHomepage"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
         <activity
-            android:name=".pages.customer.CustomerOrdersActivity"
+            android:name=".pages.customer.CustomerOrdersActivityCustomer"
             android:exported="true"
             android:label="CustomerOrderListActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
@@ -74,15 +74,23 @@
             android:label="CustomerHomepage"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
-            android:name=".pages.customer.RestaurantDetailsActivity"
+            android:name=".pages.customer.RestaurantDetailsActivityCustomer"
             android:exported="true"
             android:label="RestaurantDetails"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
         <activity
-            android:name=".pages.customer.ProfileActivity"
+            android:name=".pages.customer.ProfileActivityCustomer"
             android:exported="true"
             android:label="RestaurantDetails"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+
+        <!-- Driver pages -->
+        <activity
+            android:name=".pages.driver.DriverProfileActivity"
+            android:exported="true"
+            android:label="Customer"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
         <activity
             android:name=".pages.driver.DriverHomePageActivity"
             android:exported="true"
@@ -98,21 +106,20 @@
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
+
+        <!-- Restaurant pages -->
         <activity
-            android:name=".pages.restaurant.OrderListActivity"
+            android:name=".pages.restaurant.RestaurantOrderListActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
-            android:name=".pages.restaurant.OrderDetailsActivity"
+            android:name=".pages.restaurant.RestaurantOrderDetailsActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
-<!--        <activity-->
-<!--            android:name=".MainActivity"-->
-<!--            android:exported="true"-->
-<!--            android:label="@string/app_name"-->
-<!--            android:theme="@style/Theme.Meal_Mission_App"></activity>-->
+
 
         <service
             android:name=".services.LocationForegroundService"

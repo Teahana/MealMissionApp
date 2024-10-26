@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
+        <!-- Order ID -->
         <TextView
             android:id="@+id/textViewOrderId"
             android:layout_width="wrap_content"
@@ -21,13 +22,25 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Order Status -->
         <TextView
             android:id="@+id/textViewOrderStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/textViewOrderPrice"
+            android:layout_marginBottom="4dp" />
 
+        <!-- Order Price -->
+        <TextView
+            android:id="@+id/textViewOrderPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textViewOrderStatus" />
+
+        <!-- Order Date and Time -->
         <TextView
             android:id="@+id/textViewOrderDateTime"
             android:layout_width="wrap_content"
@@ -35,6 +48,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textViewOrderId"
             android:layout_marginTop="8dp" />
+
+        <!-- Order Distance -->
         <TextView
             android:id="@+id/textViewOrderDistance"
             android:layout_width="wrap_content"

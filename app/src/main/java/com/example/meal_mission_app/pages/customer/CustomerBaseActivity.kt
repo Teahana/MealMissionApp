@@ -6,11 +6,11 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.meal_mission_app.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-open class BaseActivity : AppCompatActivity() {
+open class CustomerBaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.base_activity)
+        setContentView(R.layout.base_activity_customer)
 
         // Set up BottomNavigationView
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
@@ -18,29 +18,29 @@ open class BaseActivity : AppCompatActivity() {
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
-                    if (this !is CustomerHomepageActivity && this !is RestaurantDetailsActivity) {
-                        startActivity(Intent(this, CustomerHomepageActivity::class.java))
+                    if (this !is CustomerHomepageActivityCustomer && this !is RestaurantDetailsActivityCustomer) {
+                        startActivity(Intent(this, CustomerHomepageActivityCustomer::class.java))
                         finish()
                     }
                     true
                 }
                 R.id.nav_cart -> {
-                    if (this !is CartActivity) {
-                        startActivity(Intent(this, CartActivity::class.java))
+                    if (this !is CartActivityCustomer) {
+                        startActivity(Intent(this, CartActivityCustomer::class.java))
                         finish()
                     }
                     true
                 }
                 R.id.nav_orders -> {
-                    if (this !is CustomerOrdersActivity) {
-                        startActivity(Intent(this, CustomerOrdersActivity::class.java))
+                    if (this !is CustomerOrdersActivityCustomer) {
+                        startActivity(Intent(this, CustomerOrdersActivityCustomer::class.java))
                         finish()
                     }
                     true
                 }
                 R.id.nav_profile -> {
-                    if (this !is ProfileActivity) {
-                        startActivity(Intent(this, ProfileActivity::class.java))
+                    if (this !is ProfileActivityCustomer) {
+                        startActivity(Intent(this, ProfileActivityCustomer::class.java))
                         finish()
                     }
                     true

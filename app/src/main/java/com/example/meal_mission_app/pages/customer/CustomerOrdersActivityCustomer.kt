@@ -20,7 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class CustomerOrdersActivity : BaseActivity() {
+class CustomerOrdersActivityCustomer : CustomerBaseActivity() {
 
     private lateinit var tabLayout: TabLayout
     private lateinit var recyclerView: RecyclerView

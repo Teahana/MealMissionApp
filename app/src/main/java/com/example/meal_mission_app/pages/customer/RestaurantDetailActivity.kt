@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
-class RestaurantDetailsActivity : BaseActivity() {
+class RestaurantDetailsActivityCustomer : CustomerBaseActivity() {
     private lateinit var selectedItems: MutableList<Pair<ItemResponse, Int>>
     private lateinit var selectedMeals: MutableList<Pair<MealResponse, Int>>
     private lateinit var totalPriceTextView: TextView
@@ -86,7 +86,7 @@ class RestaurantDetailsActivity : BaseActivity() {
                             displayRestaurantDetails(restaurantDetails)
                         } else {
                             Toast.makeText(
-                                this@RestaurantDetailsActivity,
+                                this@RestaurantDetailsActivityCustomer,
                                 "Failed to load restaurant details",
                                 Toast.LENGTH_SHORT
                             ).show()
@@ -95,7 +95,7 @@ class RestaurantDetailsActivity : BaseActivity() {
                 } else {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(
-                            this@RestaurantDetailsActivity,
+                            this@RestaurantDetailsActivityCustomer,
                             "Failed to fetch restaurant details",
                             Toast.LENGTH_SHORT
                         ).show()
@@ -105,7 +105,7 @@ class RestaurantDetailsActivity : BaseActivity() {
                 println("Error: " + e.message)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
-                        this@RestaurantDetailsActivity,
+                        this@RestaurantDetailsActivityCustomer,
                         "Error fetching restaurant details",
                         Toast.LENGTH_SHORT
                     ).show()
@@ -220,7 +220,7 @@ class RestaurantDetailsActivity : BaseActivity() {
         Toast.makeText(this, "Cart saved!", Toast.LENGTH_SHORT).show()
 
         // Navigate to CartActivity
-        val intent = Intent(this, CartActivity::class.java)
+        val intent = Intent(this, CartActivityCustomer::class.java)
         startActivity(intent)
     }
 }

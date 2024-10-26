@@ -38,7 +38,7 @@ import retrofit2.HttpException
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
 
-class CustomerActivity : BaseActivity(), OnMapReadyCallback {
+class CustomerActivityCustomer : CustomerBaseActivity(), OnMapReadyCallback {
 
     companion object {
         private const val REQUEST_LOCATION_PERMISSIONS_CODE = 1001
@@ -112,7 +112,7 @@ class CustomerActivity : BaseActivity(), OnMapReadyCallback {
         task.addOnFailureListener { exception ->
             if (exception is ResolvableApiException) {
                 try {
-                    exception.startResolutionForResult(this@CustomerActivity, REQUEST_CHECK_SETTINGS)
+                    exception.startResolutionForResult(this@CustomerActivityCustomer, REQUEST_CHECK_SETTINGS)
                 } catch (sendEx: IntentSender.SendIntentException) {
                     Toast.makeText(this, "Unable to resolve location settings.", Toast.LENGTH_SHORT).show()
                 }
@@ -287,7 +287,7 @@ class CustomerActivity : BaseActivity(), OnMapReadyCallback {
                         val newPolyline = mMap.addPolyline(
                             PolylineOptions()
                                 .addAll(decodedPath)
-                                .color(ContextCompat.getColor(this@CustomerActivity, R.color.teal_700))
+                                .color(ContextCompat.getColor(this@CustomerActivityCustomer, R.color.teal_700))
                                 .width(10f)
                         )
 

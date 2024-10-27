@@ -6,10 +6,12 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.meal_mission_app.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
+// RestaurantBaseActivity.kt
 open class RestaurantBaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Set the base layout which includes the BottomNavigationView and content placeholder
         setContentView(R.layout.base_activity_restaurant)
 
         // Set up BottomNavigationView
@@ -36,14 +38,15 @@ open class RestaurantBaseActivity : AppCompatActivity() {
         }
     }
 
-    // This will allow child activities to specify which item to highlight
     open fun getSelectedItemId(): Int {
-        return R.id.nav_restaurant_orders // Default to Orders
+        return R.id.nav_restaurant_orders // Default selection
     }
 
     override fun onResume() {
         super.onResume()
         // Ensure the correct item is selected
-        findViewById<BottomNavigationView>(R.id.restaurant_bottom_navigation).selectedItemId = getSelectedItemId()
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.restaurant_bottom_navigation)
+        bottomNavigationView.selectedItemId = getSelectedItemId()
     }
 }
+

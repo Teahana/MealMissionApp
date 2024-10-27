@@ -21,7 +21,9 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.ListView
+import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -29,8 +31,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import com.example.meal_mission_app.DTO.Restaurant
 import com.example.meal_mission_app.R
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
@@ -164,36 +168,153 @@ class UserLocationAdapter(
 }
 
 
-class AddressFragment : Fragment() {
+// AddressFragment.
+
+class AddressFragment(
+    private val isRestaurantContext: Boolean = false  // Differentiates between customer and restaurant
+) : Fragment(R.layout.fragment_address) {
 
     private lateinit var addressListView: ListView
     private lateinit var addressAdapter: UserLocationAdapter
     private var addressList = mutableListOf<UserLocation>()
 
+    private var initialLatitude: Double? = null
+    private var initialLongitude: Double? = null
+    private var initialCity: String? = null
+    private var initialAddress: String? = null
+
+    private lateinit var addAddressButton: Button
+
+    // New fields for restaurant context
+    private lateinit var editTextRestaurantName: EditText
+    private lateinit var editTextRestaurantDescription: EditText
+    private lateinit var buttonSaveRestaurant: Button
+    private lateinit var logoutButton: Button
+
+    private lateinit var restaurant: Restaurant
+    private val authToken: String by lazy { "Bearer ${OfflineStorageService.getToken(requireContext())}" }
+    private val restaurantId: Long by lazy {
+        OfflineStorageService.getRestaurantId(requireContext())?.toLongOrNull() ?: 0L
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_address, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         addressListView = view.findViewById(R.id.addressListView)
-        val addAddressButton: Button = view.findViewById(R.id.addAddressButton)
+        addAddressButton = view.findViewById(R.id.addAddressButton)
+
+        val restaurantDetailsLayout = view.findViewById<LinearLayout>(R.id.restaurantDetailsLayout)
+
+        if (isRestaurantContext) {
+            // Initialize restaurant fields
+            restaurantDetailsLayout.visibility = View.VISIBLE
+            addressListView.visibility = View.GONE
+            addAddressButton.text = "Edit Location" // Since restaurant has only one location
+
+            editTextRestaurantName = view.findViewById(R.id.editTextRestaurantName)
+            editTextRestaurantDescription = view.findViewById(R.id.editTextRestaurantDescription)
+            buttonSaveRestaurant = view.findViewById(R.id.buttonSaveRestaurant)
+            logoutButton = view.findViewById(R.id.logoutButton)
+
+            buttonSaveRestaurant.setOnClickListener {
+                saveRestaurantDetails()
+            }
+            // Make the logout button visible for the restaurant context
+            logoutButton.visibility = View.VISIBLE
+            logoutButton.setOnClickListener {
+                logoutUser()
+            }
+
+            fetchRestaurantDetails()
+        } else {
+            restaurantDetailsLayout.visibility = View.GONE
+            addressListView.visibility = View.VISIBLE
+            addAddressButton.text = "Add New Address"
+
+            fetchUserLocations()
+        }
 
         addAddressButton.setOnClickListener {
-            val bottomSheet = AddAddressBottomSheet()
+            val bottomSheet = AddAddressBottomSheet(
+                initialLatitude = initialLatitude,
+                initialLongitude = initialLongitude,
+                initialAddress = initialAddress,
+                initialCity = initialCity,
+                isRestaurantContext = isRestaurantContext
+            )
             bottomSheet.setLocationAddedListener(object : AddAddressBottomSheet.OnLocationAddedListener {
                 override fun onLocationAdded() {
-                    fetchUserLocations()  // Refresh locations
+                    if (isRestaurantContext) {
+                        fetchRestaurantDetails()
+                    } else {
+                        fetchUserLocations()  // Refresh locations
+                    }
                 }
             })
             bottomSheet.show(parentFragmentManager, "AddAddressBottomSheet")
         }
-
-        fetchUserLocations()
-        return view
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun fetchRestaurantDetails() {
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.apiService.getRestaurantDetails(
+                    mapOf("restaurantId" to restaurantId.toString()),
+                    authToken
+                )
+                if (response.isSuccessful) {
+                    restaurant = response.body()!!
+                    populateRestaurantDetails()
+                } else {
+                    showToast("Failed to fetch restaurant details")
+                }
+            } catch (e: Exception) {
+                showToast("Error: ${e.message}")
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun populateRestaurantDetails() {
+        editTextRestaurantName.setText(restaurant.name)
+        editTextRestaurantDescription.setText(restaurant.description)
+
+        initialLatitude = restaurant.latitude
+        initialLongitude = restaurant.longitude
+        initialCity = restaurant.city
+        initialAddress = restaurant.address
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun saveRestaurantDetails() {
+        restaurant.name = editTextRestaurantName.text.toString()
+        restaurant.description = editTextRestaurantDescription.text.toString()
+
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.apiService.updateRestaurant(restaurant, authToken)
+                if (response.isSuccessful) {
+                    showToast("Restaurant details updated successfully")
+                } else {
+                    showToast("Failed to update restaurant details")
+                }
+            } catch (e: Exception) {
+                showToast("Error: ${e.message}")
+            }
+        }
+    }
+    private fun logoutUser() {
+        // Clear user data from offline storage
+        OfflineStorageService.clearUserCredentials(requireContext())
+
+        // Navigate back to the login activity
+        val intent = Intent(requireContext(), LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        requireActivity().finish()  // Finish current activity
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchUserLocations() {
         val userId = OfflineStorageService.getUserId(requireContext())
@@ -203,26 +324,20 @@ class AddressFragment : Fragment() {
             "userId" to userId.toString()
         )
 
-        GlobalScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             try {
                 val response = NetworkClient.apiService.getUserLocations(requestData, token)
                 if (response.isSuccessful) {
                     response.body()?.let { locations ->
                         addressList.clear()
                         addressList.addAll(locations)
-                        withContext(Dispatchers.Main) {
-                            renderAddressList()
-                        }
+                        renderAddressList()
                     }
                 } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "Failed to fetch addresses.", Toast.LENGTH_SHORT).show()
-                    }
+                    showToast("Failed to fetch addresses")
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                }
+                showToast("Error: ${e.localizedMessage}")
             }
         }
     }
@@ -243,33 +358,43 @@ class AddressFragment : Fragment() {
             "id" to locationId.toString()
         )
 
-        GlobalScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             try {
                 val response = NetworkClient.apiService.deleteLocation(requestData, token)
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        Toast.makeText(requireContext(), "Location deleted successfully!", Toast.LENGTH_SHORT).show()
-                        fetchUserLocations()  // Refresh list after deletion
-                    } else {
-                        Toast.makeText(requireContext(), "Failed to delete location.", Toast.LENGTH_SHORT).show()
-                    }
+                if (response.isSuccessful) {
+                    showToast("Location deleted successfully")
+                    fetchUserLocations()  // Refresh list after deletion
+                } else {
+                    showToast("Failed to delete location")
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                }
+                showToast("Error: ${e.localizedMessage}")
             }
         }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 }
 
 
-class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
+
+
+class AddAddressBottomSheet(
+    private val initialLatitude: Double? = null,
+    private val initialLongitude: Double? = null,
+    private val initialAddress: String? = null,
+    private val initialCity: String? = null,
+    private val isRestaurantContext: Boolean = false // Differentiates between customer and restaurant
+) : BottomSheetDialogFragment(), OnMapReadyCallback {
+
     companion object {
         private const val REQUEST_LOCATION_PERMISSIONS_CODE = 1001
         private const val REQUEST_CHECK_SETTINGS = 1002
         private const val MAX_RETRIES = 5
     }
+
     interface OnLocationAddedListener {
         fun onLocationAdded()
     }
@@ -284,8 +409,11 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
     private lateinit var googleMap: GoogleMap
     private lateinit var addressEditText: EditText
     private lateinit var descriptionEditText: EditText
+    private lateinit var cityEditText: EditText
     private lateinit var locationService: LocationService
     private lateinit var loadingTextView: TextView
+    private lateinit var saveAddressButton: Button
+    private lateinit var closeButton: ImageButton
 
     private var selectedLatitude: Double? = null
     private var selectedLongitude: Double? = null
@@ -302,14 +430,16 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
+
     ): View? {
         val view = inflater.inflate(R.layout.bottom_sheet_add_address, container, false)
 
         mapView = view.findViewById(R.id.mapContainer)
         addressEditText = view.findViewById(R.id.addressEditText)
         descriptionEditText = view.findViewById(R.id.descriptionEditText)
-        val saveAddressButton: Button = view.findViewById(R.id.saveAddressButton)
-        val closeButton: ImageButton = view.findViewById(R.id.closeButton)
+        cityEditText = view.findViewById(R.id.cityEditText)
+        saveAddressButton = view.findViewById(R.id.saveAddressButton)
+        closeButton = view.findViewById(R.id.closeButton)
         loadingTextView = view.findViewById(R.id.loadingTextView)
 
         mapView.onCreate(savedInstanceState)
@@ -340,22 +470,51 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
         }
 
         saveAddressButton.setOnClickListener {
-            saveUserLocation()
+            if (isRestaurantContext) {
+                saveRestaurantLocation()
+            } else {
+                saveCustomerLocation()
+            }
         }
 
         locationService = LocationService(requireContext())
 
+        // Show or hide fields based on context
+        if (isRestaurantContext) {
+            descriptionEditText.visibility = View.GONE
+            cityEditText.visibility = View.VISIBLE
+            if (initialCity != null) {
+                cityEditText.setText(initialCity)
+                selectedCity = initialCity
+            }
+            // Adjust saveAddressButton layout_below to cityEditText
+            val params = saveAddressButton.layoutParams as RelativeLayout.LayoutParams
+            params.addRule(RelativeLayout.BELOW, R.id.cityEditText)
+            saveAddressButton.layoutParams = params
+        } else {
+            descriptionEditText.visibility = View.VISIBLE
+            cityEditText.visibility = View.GONE
+            // Adjust saveAddressButton layout_below to descriptionEditText
+            val params = saveAddressButton.layoutParams as RelativeLayout.LayoutParams
+            params.addRule(RelativeLayout.BELOW, R.id.descriptionEditText)
+            saveAddressButton.layoutParams = params
+        }
+
         return view
     }
-
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
 
-        if (checkLocationPermission()) {
-            checkLocationSettings()
+        if (initialLatitude != null && initialLongitude != null) {
+            val initialLatLng = LatLng(initialLatitude!!, initialLongitude!!)
+            placeMarkerOnMap(initialLatLng, initialPlacer = true)
         } else {
-            requestLocationPermission()
+            if (checkLocationPermission()) {
+                checkLocationSettings()
+            } else {
+                requestLocationPermission()
+            }
         }
 
         googleMap.setOnMapClickListener { latLng ->
@@ -375,38 +534,56 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
 
         selectedLatitude = latLng.latitude
         selectedLongitude = latLng.longitude
-        updateAddressAndCity(latLng)
+
+        if (initialPlacer) {
+            if (initialAddress != null) {
+                selectedAddress = initialAddress
+                addressEditText.setText(initialAddress)
+            } else {
+                updateAddressAndCity(latLng)
+            }
+
+            if (initialCity != null) {
+                selectedCity = initialCity
+                if (isRestaurantContext) {
+                    cityEditText.setText(initialCity)
+                }
+            } else {
+                updateAddressAndCity(latLng)
+            }
+        } else {
+            updateAddressAndCity(latLng)
+        }
     }
 
     private fun updateAddressAndCity(latLng: LatLng) {
         val geocoder = Geocoder(requireContext(), Locale.getDefault())
 
-        GlobalScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             try {
-                val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)?.filterNotNull().orEmpty()
+                val addresses = withContext(Dispatchers.IO) {
+                    geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)?.filterNotNull().orEmpty()
+                }
                 if (addresses.isNotEmpty()) {
                     val address = addresses[0]
                     selectedAddress = address.getAddressLine(0)
-                    selectedCity = address.locality
+                    selectedCity = address.locality ?: address.subAdminArea ?: address.adminArea
 
-                    launch(Dispatchers.Main) {
-                        addressEditText.setText(selectedAddress)
+                    addressEditText.setText(selectedAddress)
+                    if (isRestaurantContext) {
+                        cityEditText.setText(selectedCity)
                     }
                 } else {
-                    launch(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "No address found for this location.", Toast.LENGTH_SHORT).show()
-                    }
+                    Toast.makeText(requireContext(), "No address found for this location.", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: IOException) {
-                launch(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Error getting address: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                }
+                Toast.makeText(requireContext(), "Error getting address: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun saveUserLocation() {
+    private fun saveCustomerLocation() {
         val token = "Bearer ${OfflineStorageService.getToken(requireContext())}"
         val userId = OfflineStorageService.getUserId(requireContext())
         val longitude = selectedLongitude
@@ -429,23 +606,58 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
             "city" to city
         )
 
-        GlobalScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             try {
                 val response = NetworkClient.apiService.saveUserLocation(requestData, token)
 
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        locationAddedListener?.onLocationAdded()  // Notify listener
-                        Toast.makeText(requireContext(), "Location saved successfully!", Toast.LENGTH_SHORT).show()
-                        dismiss()
-                    } else {
-                        Toast.makeText(requireContext(), "Failed to save location.", Toast.LENGTH_SHORT).show()
-                    }
+                if (response.isSuccessful) {
+                    locationAddedListener?.onLocationAdded()  // Notify listener
+                    Toast.makeText(requireContext(), "Location saved successfully!", Toast.LENGTH_SHORT).show()
+                    dismiss()
+                } else {
+                    Toast.makeText(requireContext(), "Failed to save location.", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun saveRestaurantLocation() {
+        val token = "Bearer ${OfflineStorageService.getToken(requireContext())}"
+        val restaurantId = OfflineStorageService.getRestaurantId(requireContext())
+        val longitude = selectedLongitude
+        val latitude = selectedLatitude
+        val address = addressEditText.text.toString().trim()
+        val city = cityEditText.text.toString().trim()
+
+        if (longitude == null || latitude == null || address.isEmpty() || city.isEmpty()) {
+            Toast.makeText(requireContext(), "Please select a valid location and enter city.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val requestData = mapOf(
+            "restaurantId" to restaurantId.toString(),
+            "longitude" to longitude.toString(),
+            "latitude" to latitude.toString(),
+            "address" to address,
+            "city" to city
+        )
+
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.apiService.saveRestaurantLocation(requestData, token)
+
+                if (response.isSuccessful) {
+                    locationAddedListener?.onLocationAdded()  // Notify listener
+                    Toast.makeText(requireContext(), "Location saved successfully!", Toast.LENGTH_SHORT).show()
+                    dismiss()
+                } else {
+                    Toast.makeText(requireContext(), "Failed to save location.", Toast.LENGTH_SHORT).show()
                 }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -461,8 +673,7 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
     }
 
     private fun requestLocationPermission() {
-        ActivityCompat.requestPermissions(
-            requireActivity(),
+        requestPermissions(
             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
             REQUEST_LOCATION_PERMISSIONS_CODE
         )
@@ -484,7 +695,6 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
         val task: Task<LocationSettingsResponse> = settingsClient.checkLocationSettings(builder.build())
 
         task.addOnSuccessListener {
-            println("sucess")
             getUserLocation() // Proceed to fetch the user location if settings are enabled
         }
 
@@ -500,10 +710,11 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
             }
         }
     }
+
     private fun getUserLocation() {
         showLoading("Fetching precise location...")
 
-        fetchCurrentLocation { location ->
+        locationService.getCurrentLocation { location ->
             if (location != null) {
                 if (location.accuracy <= 30) {
                     bestLocation = location
@@ -545,7 +756,7 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
             }
         }
     }
-    @SuppressLint("SetTextI18n")
+
     private fun showLoading(message: String) {
         loadingTextView.text = message
         loadingTextView.visibility = View.VISIBLE
@@ -554,24 +765,8 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
     private fun hideLoading() {
         loadingTextView.visibility = View.GONE
     }
-    private fun fetchCurrentLocation(callback: (Location?) -> Unit) {
-        locationService.getCurrentLocation { location ->
-            callback(location)
-        }
-    }
-
-    private fun updateMapWithLocation(userLatLng: LatLng) {
-        googleMap.clear() // Clear previous markers if any
-        googleMap.addMarker(
-            MarkerOptions()
-                .position(userLatLng)
-                .title("Your Location")
-        )
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15f))
-    }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_LOCATION_PERMISSIONS_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             checkLocationSettings()
         } else {
@@ -580,7 +775,6 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CHECK_SETTINGS) {
             if (resultCode == Activity.RESULT_OK) {
                 getUserLocation()
@@ -610,6 +804,7 @@ class AddAddressBottomSheet : BottomSheetDialogFragment(), OnMapReadyCallback {
         mapView.onLowMemory()
     }
 }
+
 
 // UserLocation data class without the User field
 data class UserLocation(

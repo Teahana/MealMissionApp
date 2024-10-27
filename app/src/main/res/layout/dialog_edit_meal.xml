@@ -1,0 +1,86 @@
+<!-- dialog_edit_meal.xml -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/linearLayoutMealDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- EditText for Meal Name -->
+        <EditText
+            android:id="@+id/editTextMealName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Meal Name" />
+
+        <!-- EditText for Meal Price -->
+        <EditText
+            android:id="@+id/editTextMealPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Price"
+            android:inputType="numberDecimal" />
+
+        <!-- EditText for Meal Description -->
+        <EditText
+            android:id="@+id/editTextMealDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description"
+            android:minLines="3"
+            android:gravity="top" />
+
+        <!-- ImageView to display selected image -->
+        <ImageView
+            android:id="@+id/imageViewMealImage"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:contentDescription="Meal Image"
+            android:scaleType="centerCrop"
+            android:layout_marginTop="8dp" />
+
+        <!-- Button to select image -->
+        <Button
+            android:id="@+id/buttonSelectMealImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Image"
+            android:layout_marginTop="8dp" />
+
+        <!-- Button to select items -->
+        <Button
+            android:id="@+id/buttonSelectItems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Items"
+            android:layout_marginTop="8dp" />
+
+        <!-- TextView to display selected items -->
+        <TextView
+            android:id="@+id/textViewSelectedItems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Selected Items: None"
+            android:layout_marginTop="8dp" />
+
+        <!-- Switch for Meal Availability -->
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchMealAvailable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Available"
+            android:layout_marginTop="8dp" />
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/buttonSaveMeal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
+</ScrollView>

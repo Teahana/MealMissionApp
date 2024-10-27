@@ -1,0 +1,9 @@
+<!-- res/menu/items_menu.xml -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_add_item"
+        android:title="Add Item"
+        android:icon="@android:drawable/ic_input_add"
+        app:showAsAction="ifRoom" />
+</menu>

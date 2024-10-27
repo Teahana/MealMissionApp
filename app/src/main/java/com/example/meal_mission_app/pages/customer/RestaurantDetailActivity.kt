@@ -8,12 +8,14 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.meal_mission_app.R
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
@@ -114,10 +116,29 @@ class RestaurantDetailsActivityCustomer : CustomerBaseActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun displayRestaurantDetails(restaurantDetails: RestaurantDetailResponse) {
-        // Assuming TextViews for restaurant details
+        // Restaurant Logo
+        val restaurantLogoImageView: ImageView = findViewById(R.id.restaurantLogoImageView)
+        Glide.with(this)
+            .load(restaurantDetails.logoUrl)
+            .placeholder(R.drawable.placeholder_image)
+            .error(R.drawable.placeholder_image)
+            .into(restaurantLogoImageView)
+
+        // Restaurant Name and Description
         findViewById<TextView>(R.id.restaurantName).text = restaurantDetails.name
         findViewById<TextView>(R.id.restaurantDescription).text = restaurantDetails.description
+
+        // Set up RecyclerView for meals
+        println("Number of meals received: ${restaurantDetails.meals.size}")
+        val mealsRecyclerView: RecyclerView = findViewById(R.id.mealsRecyclerView)
+        mealsRecyclerView.layoutManager = LinearLayoutManager(this)
+        mealsRecyclerView.adapter = MealAdapter(restaurantDetails.meals, { meal, quantity ->
+            handleMealSelection(meal, quantity)
+        }, { meal ->
+            handleMealRemoval(meal)
+        })
 
         // Set up RecyclerView for items
         val itemsRecyclerView: RecyclerView = findViewById(R.id.itemsRecyclerView)
@@ -126,15 +147,6 @@ class RestaurantDetailsActivityCustomer : CustomerBaseActivity() {
             handleItemSelection(item, quantity)
         }, { item ->
             handleItemRemoval(item)
-        })
-
-        // Set up RecyclerView for meals
-        val mealsRecyclerView: RecyclerView = findViewById(R.id.mealsRecyclerView)
-        mealsRecyclerView.layoutManager = LinearLayoutManager(this)
-        mealsRecyclerView.adapter = MealAdapter(restaurantDetails.meals, { meal, quantity ->
-            handleMealSelection(meal, quantity)
-        }, { meal ->
-            handleMealRemoval(meal)
         })
     }
 
@@ -257,14 +269,18 @@ class MealAdapter(
         private val increaseQuantityButton: Button = view.findViewById(R.id.increaseQuantityButton)
         private val mealQuantityText: TextView = view.findViewById(R.id.itemQuantityText)
         private val removeButton: Button = view.findViewById(R.id.removeButton)
-
+        private val mealImageView: ImageView = view.findViewById(R.id.mealImageView)
         private var quantity: Int = 1
 
         fun bind(meal: MealResponse) {
             mealNameTextView.text = meal.name
             mealDescriptionTextView.text = meal.description
             mealPriceTextView.text = "${meal.price} USD"
-
+            Glide.with(mealImageView.context)
+                .load(meal.imageUrl)
+                .placeholder(R.drawable.placeholder_image)
+                .error(R.drawable.placeholder_image)
+                .into(mealImageView)
             // Initially show "ADD" button and hide the quantity layout
             addButton.visibility = View.VISIBLE
             quantityLayout.visibility = View.GONE
@@ -338,6 +354,7 @@ class ItemAdapter(
         private val increaseQuantityButton: Button = view.findViewById(R.id.increaseQuantityButton)
         private val itemQuantityText: TextView = view.findViewById(R.id.itemQuantityText)
         private val removeButton: Button = view.findViewById(R.id.removeButton)
+        private val itemImageView: ImageView = view.findViewById(R.id.itemImageView)
 
         private var quantity: Int = 1
 
@@ -346,6 +363,11 @@ class ItemAdapter(
             itemDescriptionTextView.text = item.description
             itemPriceTextView.text = "${item.price} USD"
 
+            Glide.with(itemImageView.context)
+                .load(item.imageUrl)
+                .placeholder(R.drawable.placeholder_image)
+                .error(R.drawable.placeholder_image)
+                .into(itemImageView)
             // Initially show "ADD" button and hide the quantity layout
             addButton.visibility = View.VISIBLE
             quantityLayout.visibility = View.GONE
@@ -416,7 +438,8 @@ data class RestaurantDetailResponse(
     val address: String,
     val phone: String?,
     val email: String?,
-    val description: String?,  // Make this nullable
+    val description: String?,
+    val logoUrl: String?,
     val items: List<ItemResponse>,
     val meals: List<MealResponse>
 )
@@ -426,6 +449,7 @@ data class MealResponse(
     val name: String,
     val price: Double,
     val description: String,
+    val imageUrl: String?,
     val items: List<ItemResponse>
 )
 
@@ -433,6 +457,7 @@ data class ItemResponse(
     val id: Long,
     val name: String,
     val description: String,
+    val imageUrl: String?,
     val price: Double
 )
 

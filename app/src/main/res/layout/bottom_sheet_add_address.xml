@@ -1,3 +1,4 @@
+<!-- bottom_sheet_add_address.xml -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -8,7 +9,7 @@
         android:id="@+id/closeButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@android:drawable/ic_menu_close_clear_cancel"
@@ -46,6 +47,7 @@
         android:layout_below="@id/mapContainer"
         android:layout_marginTop="16dp"/>
 
+    <!-- Description EditText (Visible in customer context) -->
     <EditText
         android:id="@+id/descriptionEditText"
         android:layout_width="match_parent"
@@ -54,11 +56,21 @@
         android:layout_below="@id/addressEditText"
         android:layout_marginTop="8dp"/>
 
+    <!-- City EditText (Visible in restaurant context) -->
+    <EditText
+        android:id="@+id/cityEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="City"
+        android:layout_below="@id/addressEditText"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"/>
+
     <Button
         android:id="@+id/saveAddressButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Save Address"
         android:layout_below="@id/descriptionEditText"
-        android:layout_marginTop="24dp"/>
+    android:layout_marginTop="24dp"/>
 </RelativeLayout>

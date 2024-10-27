@@ -1,0 +1,9 @@
+<!-- res/menu/meals_menu.xml -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_add_meal"
+        android:title="Add Meal"
+        android:icon="@android:drawable/ic_input_add"
+        app:showAsAction="ifRoom" />
+</menu>

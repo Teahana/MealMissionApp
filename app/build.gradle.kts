@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("com.google.gms.google-services")
+    id("kotlin-kapt")
 }
 
 android {
@@ -30,6 +31,7 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -51,19 +53,59 @@ android {
 }
 
 dependencies {
+    // AndroidX Core and AppCompat
+    implementation("androidx.core:core-ktx:1.10.1")
+    implementation("androidx.appcompat:appcompat:1.6.1")
 
-    implementation(libs.androidx.core.ktx)
+    // AndroidX Lifecycle
     implementation(libs.androidx.lifecycle.runtime.ktx)
+
+    // Compose Dependencies
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.play.services.location)
-    implementation(libs.androidx.recyclerview)
-    implementation(libs.material)
+
+    // Material Design Components (includes TabLayout)
+    implementation("com.google.android.material:material:1.9.0")
+
+    // ViewPager2 for Fragments
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
+
+    // RecyclerView and ConstraintLayout
+    implementation("androidx.recyclerview:recyclerview:1.3.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+
+    // Google Maps and Location Services
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.maps.android:android-maps-utils:2.2.0") // For polyline decoding
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-messaging")
+
+    // Retrofit and OkHttp for Networking
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.1")
+
+    // JSON Parsing
+    implementation("com.google.code.gson:gson:2.8.9")
+
+    // Image Loading
+    implementation("com.squareup.picasso:picasso:2.8")
+
+    // Secure Data Storage
+    implementation("androidx.security:security-crypto:1.1.0-alpha03")
+
+    implementation("com.github.bumptech.glide:glide:4.12.0")
+    kapt("com.github.bumptech.glide:compiler:4.12.0")
+
+    // Testing Dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,28 +113,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    // Retrofit and OkHttp dependencies
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.9.1")
+
+    // Work Manager for Background Tasks
     implementation("androidx.work:work-runtime-ktx:2.7.1")
-    // Secure data storage
-    implementation("androidx.security:security-crypto:1.1.0-alpha03")
-    implementation("com.google.android.gms:play-services-location:21.0.1")
-    implementation("com.google.android.gms:play-services-maps:18.0.2")
-    implementation("com.google.maps.android:android-maps-utils:2.2.0") // For polyline decoding
-    //implementation("khttp:khttp:1.0.0")
-    implementation("com.google.android.gms:play-services-location:21.0.1")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.cardview:cardview:1.0.0")
-    implementation("com.google.code.gson:gson:2.8.9")
-    implementation("androidx.viewpager2:viewpager2:1.0.0")
-    implementation("com.google.android.material:material:1.4.0")
-    //Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-messaging")
-
-
-
 }

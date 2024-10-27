@@ -1,20 +1,66 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!-- fragment_address.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/addressFragmentLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Restaurant Details Layout (Visible in restaurant context) -->
+    <LinearLayout
+        android:id="@+id/restaurantDetailsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- Restaurant Name -->
+        <EditText
+            android:id="@+id/editTextRestaurantName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Restaurant Name" />
+
+        <!-- Restaurant Description -->
+        <EditText
+            android:id="@+id/editTextRestaurantDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description" />
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/buttonSaveRestaurant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
+
+    <!-- Add Address Button -->
     <Button
         android:id="@+id/addAddressButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Add New Address"
         android:layout_gravity="end"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginTop="16dp" />
 
+    <!-- ListView for addresses (Visible in customer context) -->
     <ListView
         android:id="@+id/addressListView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+
+    <!-- Logout Button for Restaurant Context -->
+    <Button
+        android:id="@+id/logoutButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Logout"
+        android:visibility="gone"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="24dp" />
 </LinearLayout>

@@ -4,6 +4,14 @@
     android:orientation="vertical"
     android:padding="8dp">
 
+    <!-- Item Image -->
+    <ImageView
+        android:id="@+id/itemImageView"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="Item Image"
+        android:src="@drawable/placeholder_image" />
     <TextView
         android:id="@+id/itemName"
         android:layout_width="wrap_content"

@@ -4,28 +4,37 @@
     android:orientation="vertical"
     android:padding="8dp">
 
+    <!-- Meal Image -->
+    <ImageView
+        android:id="@+id/mealImageView"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="Meal Image"
+        android:src="@drawable/placeholder_image" />
+
+    <!-- Meal Details -->
     <TextView
         android:id="@+id/mealName"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
+        android:textSize="18sp"
         android:textStyle="bold"
-        android:text="Meal Name" />
+        android:layout_marginTop="8dp" />
 
     <TextView
         android:id="@+id/mealDescription"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="14sp"
-        android:text="Meal Description"
         android:layout_marginTop="4dp" />
 
     <TextView
         android:id="@+id/mealPrice"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:text="Price"
+        android:textSize="16sp"
+        android:textColor="@color/colorPrimary"
         android:layout_marginTop="4dp" />
 
     <!-- "ADD" Button initially visible -->

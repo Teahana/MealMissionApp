@@ -1,0 +1,70 @@
+<!-- dialog_edit_item.xml -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/linearLayoutItemDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- EditText for Item Name -->
+        <EditText
+            android:id="@+id/editTextItemName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Item Name" />
+
+        <!-- EditText for Item Price -->
+        <EditText
+            android:id="@+id/editTextItemPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Price"
+            android:inputType="numberDecimal" />
+
+        <!-- EditText for Item Description -->
+        <EditText
+            android:id="@+id/editTextItemDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description"
+            android:minLines="3"
+            android:gravity="top" />
+
+        <!-- ImageView to display selected image -->
+        <ImageView
+            android:id="@+id/imageViewItemImage"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:contentDescription="Item Image"
+            android:scaleType="centerCrop"
+            android:layout_marginTop="8dp" />
+
+        <!-- Button to select image -->
+        <Button
+            android:id="@+id/buttonSelectItemImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Image"
+            android:layout_marginTop="8dp" />
+
+        <!-- Switch for Item Availability -->
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchItemAvailable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Available"
+            android:layout_marginTop="8dp" />
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/buttonSaveItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
+</ScrollView>

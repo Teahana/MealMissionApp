@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -9,6 +10,7 @@
 
     <!-- Header with Logo Image -->
     <LinearLayout
+        android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -19,11 +21,12 @@
             android:id="@+id/logo_image"
             android:layout_width="120dp"
             android:layout_height="60dp"
-            android:src="@drawable/logo/logo" />
+            android:src="@drawable/logo" />
     </LinearLayout>
 
     <!-- Content Area -->
     <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -31,40 +34,42 @@
         android:paddingBottom="8dp">
 
         <LinearLayout
+            android:id="@+id/contentLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <!-- Order Details Card -->
             <LinearLayout
+                android:id="@+id/orderDetailsCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
                 android:background="@drawable/cart_order_group_card"
                 android:orientation="vertical"
-                android:padding="16dp"
-                android:layout_marginBottom="8dp">
+                android:padding="16dp">
 
                 <!-- Order ID and Status -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="space_between">
+                    android:orientation="horizontal">
 
                     <TextView
                         android:id="@+id/textViewOrderId"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:textStyle="bold"
+                        android:layout_weight="1"
+                        android:textColor="@android:color/black"
                         android:textSize="18sp"
-                        android:textColor="@android:color/black" />
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/textViewOrderStatus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textColor="@android:color/black" />
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp" />
                 </LinearLayout>
 
                 <!-- Order Date and Time -->
@@ -73,8 +78,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textSize="14sp"
-                    android:textColor="@android:color/darker_gray" />
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="14sp" />
 
                 <!-- Customer Info -->
                 <TextView
@@ -82,8 +87,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:textSize="14sp"
-                    android:textColor="@android:color/black" />
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp" />
 
                 <!-- Meal Price -->
                 <TextView
@@ -91,26 +96,26 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textSize="14sp"
-                    android:textColor="@android:color/black" />
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp" />
 
                 <!-- Divider -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@drawable/cart_divider"
-                    android:layout_marginVertical="8dp" />
+                    android:layout_marginVertical="8dp"
+                    android:background="@drawable/cart_divider" />
 
                 <!-- Order Meals Title -->
                 <TextView
                     android:id="@+id/textViewOrderMealsTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Order Meals:"
-                    android:textStyle="bold"
                     android:layout_marginTop="16dp"
+                    android:text="Order Meals:"
+                    android:textColor="@android:color/black"
                     android:textSize="16sp"
-                    android:textColor="@android:color/black" />
+                    android:textStyle="bold" />
 
                 <!-- Order Meals -->
                 <TextView
@@ -118,19 +123,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textSize="14sp"
-                    android:textColor="@android:color/black" />
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp" />
 
                 <!-- Order Items Title -->
                 <TextView
                     android:id="@+id/textViewOrderItemsTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Order Items:"
-                    android:textStyle="bold"
                     android:layout_marginTop="16dp"
+                    android:text="Order Items:"
+                    android:textColor="@android:color/black"
                     android:textSize="16sp"
-                    android:textColor="@android:color/black" />
+                    android:textStyle="bold" />
 
                 <!-- Order Items -->
                 <TextView
@@ -138,12 +143,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textSize="14sp"
-                    android:textColor="@android:color/black" />
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <!-- Buttons -->
             <LinearLayout
+                android:id="@+id/buttonLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
@@ -155,7 +161,7 @@
                     android:text="Accept Order"
                     android:textColor="@android:color/black"
                     android:textSize="16sp"
-                    android:background="@drawable/cart_payment_button"
+                    android:background="@drawable/button_orange"
                     android:layout_marginTop="16dp" />
 
                 <Button
@@ -165,7 +171,7 @@
                     android:text="Order Ready"
                     android:textColor="@android:color/black"
                     android:textSize="16sp"
-                    android:background="@drawable/cart_payment_button"
+                    android:background="@drawable/button_green"
                     android:layout_marginTop="8dp"
                     android:enabled="false" />
             </LinearLayout>

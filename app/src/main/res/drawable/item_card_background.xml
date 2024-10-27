@@ -1,0 +1,6 @@
+<!-- res/drawable/item_card_background.xml -->
+<!-- res/drawable/button_background.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#8BC34A" />
+    <corners android:radius="8dp" />
+</shape>

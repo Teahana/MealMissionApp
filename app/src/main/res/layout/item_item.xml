@@ -1,81 +1,114 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/itemContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="16dp"
+    android:background="@android:color/white">
 
-    <TextView
-        android:id="@+id/itemName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:text="Item Name" />
-
-    <TextView
-        android:id="@+id/itemDescription"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:text="Item Description"
-        android:layout_marginTop="4dp" />
-
-    <TextView
-        android:id="@+id/itemPrice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:text="Price"
-        android:layout_marginTop="4dp" />
-
-    <!-- "ADD" Button initially visible -->
-    <Button
-        android:id="@+id/addButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ADD"
-        android:layout_marginTop="8dp"
-        android:visibility="visible" />
-
-    <!-- Quantity adjustment layout initially hidden -->
+    <!-- Item Card -->
     <LinearLayout
-        android:id="@+id/quantityLayout"
-        android:layout_width="wrap_content"
+        android:id="@+id/itemCard"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:visibility="gone">
+        android:background="@drawable/button_green"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_marginBottom="8dp">
 
-        <!-- Decrease button -->
-        <Button
-            android:id="@+id/decreaseQuantityButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="-" />
-
-        <!-- Quantity display -->
+        <!-- Item Name -->
         <TextView
-            android:id="@+id/itemQuantityText"
+            android:id="@+id/itemName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1"
-            android:textSize="18sp"
-            android:gravity="center"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp" />
+            android:text="Item Name"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
 
-        <!-- Increase button -->
-        <Button
-            android:id="@+id/increaseQuantityButton"
+        <!-- Item Description -->
+        <TextView
+            android:id="@+id/itemDescription"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="+" />
+            android:text="Item Description"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:layout_marginTop="4dp" />
 
-        <!-- Remove button -->
-        <Button
-            android:id="@+id/removeButton"
+        <!-- Item Price -->
+        <TextView
+            android:id="@+id/itemPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Remove"
-            android:layout_marginLeft="8dp" />
+            android:text="Price"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:layout_marginTop="4dp" />
+
+        <!-- Quantity Adjustment and Add to Cart -->
+        <LinearLayout
+            android:id="@+id/quantityAddToCartLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="16dp">
+
+            <!-- Quantity Adjustment Layout -->
+            <LinearLayout
+                android:id="@+id/quantityLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- Decrease Button -->
+                <Button
+                    android:id="@+id/decreaseQuantityButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:text="-"
+                    android:textSize="24sp"
+                    android:textColor="@android:color/black"
+                    android:background="@drawable/button_orange" />
+
+                <!-- Quantity Display -->
+                <TextView
+                    android:id="@+id/itemQuantityText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1"
+                    android:textSize="18sp"
+                    android:textColor="@android:color/black"
+                    android:gravity="center"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginRight="16dp" />
+
+                <!-- Increase Button -->
+                <Button
+                    android:id="@+id/increaseQuantityButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:text="+"
+                    android:textSize="24sp"
+                    android:textColor="@android:color/black"
+                    android:background="@drawable/button_orange" />
+            </LinearLayout>
+
+            <!-- Add to Cart Button -->
+            <Button
+                android:id="@+id/addToCartButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:text="Add to Cart"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                android:background="@drawable/button_orange"
+                android:layout_weight="1"
+                android:layout_marginLeft="16dp" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

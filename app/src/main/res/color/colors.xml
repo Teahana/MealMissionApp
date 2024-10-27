@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- res/values/colors.xml -->
+    <resources>
+        <color name="colorPrimary">#A1D6B2</color>       <!-- Light Green -->
+        <color name="colorSecondary">#CEDF9F</color>     <!-- Light Olive -->
+        <color name="colorBackground">#F1F3C2</color>    <!-- Light Yellow -->
+        <color name="colorAccent">#E8B86D</color>        <!-- Light Orange -->
+        <color name="colorTextPrimary">#000000</color>   <!-- Black -->
+        <color name="colorTextButton">#FFFFFF</color>    <!-- White -->
+    </resources>
 
 </selector>

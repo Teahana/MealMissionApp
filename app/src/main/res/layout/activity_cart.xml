@@ -155,7 +155,7 @@
             android:text="Select Payment Method"
             android:textColor="@android:color/black"
             android:textSize="16sp"
-            android:background="@drawable/cart_payment_button" />
+            android:background="@drawable/button_green" />
     </LinearLayout>
 
 </LinearLayout>

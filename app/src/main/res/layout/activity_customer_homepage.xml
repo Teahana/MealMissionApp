@@ -1,8 +1,6 @@
-<!-- activity_customer_homepage.xml -->
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -28,6 +26,30 @@
             android:textSize="24sp"
             android:textStyle="bold"
             android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- Loading Indicator -->
+    <LinearLayout
+        android:id="@+id/loadingLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:id="@+id/loadingSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true" />
+
+        <TextView
+            android:id="@+id/loadingText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetching restaurants..."
+            android:textSize="16sp"
+            android:layout_marginTop="8dp" />
     </LinearLayout>
 
     <!-- Search Bar -->

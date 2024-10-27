@@ -230,5 +230,14 @@ interface ApiService {
         @Header("Authorization") authToken: String
     ): Response<Map<String,Any>>
 
+    // ApiService.kt
+
+    @POST("/api/notifyCustomer")
+    suspend fun notifyCustomer(
+        @Body data: Map<String, String>,
+        @Header("Authorization") authToken: String
+    ): Response<Map<String, Any>>
+
+
 }
 

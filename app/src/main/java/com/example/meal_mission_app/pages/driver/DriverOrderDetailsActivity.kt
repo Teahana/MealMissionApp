@@ -37,6 +37,7 @@ import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
+import com.google.android.material.button.MaterialButton
 import com.google.maps.android.PolyUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -55,11 +56,13 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var buttonDelivered: Button
     private lateinit var toolbar: Toolbar
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var buttonNotifyCustomer: MaterialButton
 
     private var driverMarker: Marker? = null
     private var orderId: Long = -1
     private var customerLatitude: Double = 0.0
     private var customerLongitude: Double = 0.0
+    private var customerId: Long = -1
 
     private val handler = Handler(Looper.getMainLooper())
 
@@ -93,8 +96,11 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         orderId = intent.getLongExtra("ORDER_ID", -1)
 
+        buttonNotifyCustomer = findViewById(R.id.buttonNotifyCustomer)
+
         buttonAccept.setOnClickListener { acceptOrder() }
         buttonDelivered.setOnClickListener { deliverOrder() }
+        buttonNotifyCustomer.setOnClickListener { notifyCustomer() }
 
         checkPermissionsAndSettings()
     }
@@ -243,6 +249,7 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun handleOrderDetails(order: CustomerOrderDto) {
+        customerId = order.customerId
         // Formatting items and meals details in a list format
         val itemsDetails = order.items.joinToString("<br>") { item ->
             "<b>${item.quantity} x</b> ${item.itemName} (\$${item.itemPrice})"
@@ -327,6 +334,7 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
                             buttonAccept.isEnabled = false
                             buttonDelivered.isEnabled = true
+                            buttonNotifyCustomer.isEnabled = true
                             showToast("Order accepted successfully!")
                         } else {
                             requestLocationPermission() // Request location permission if not granted
@@ -361,7 +369,34 @@ class DriverOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun notifyCustomer() {
+        val token = "Bearer ${OfflineStorageService.getToken(this)}"
+        val requestData = mapOf(
+            "userId" to customerId.toString(),
+            "orderId" to orderId.toString()
+        )
 
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = NetworkClient.apiService.notifyCustomer(requestData, token)
+
+                if (response.isSuccessful) {
+                    withContext(Dispatchers.Main) {
+                        showToast("Customer notified successfully!")
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        showToast("Failed to notify customer: ${response.message()}")
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showToast("Error: ${e.localizedMessage}")
+                }
+            }
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun deliverOrder() {

@@ -10,6 +10,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -43,6 +45,11 @@ class CustomerHomepageActivityCustomer : CustomerBaseActivity() {
     private var userLatitude: Double? = null
     private var userLongitude: Double? = null
 
+    // Loading UI elements
+    private lateinit var loadingLayout: LinearLayout
+    private lateinit var loadingSpinner: ProgressBar
+    private lateinit var loadingText: TextView
+
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -54,6 +61,11 @@ class CustomerHomepageActivityCustomer : CustomerBaseActivity() {
 
         recyclerView = findViewById(R.id.recyclerView)
         searchBar = findViewById(R.id.searchBar)
+
+        // Loading UI initialization
+        loadingLayout = findViewById(R.id.loadingLayout)
+        loadingSpinner = findViewById(R.id.loadingSpinner)
+        loadingText = findViewById(R.id.loadingText)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
         adapter = HomepageAdapter(listOf()) { restaurant ->
@@ -69,10 +81,37 @@ class CustomerHomepageActivityCustomer : CustomerBaseActivity() {
         }
 
         if (checkLocationPermission()) {
+            showLoading()  // Show loading spinner while fetching location
             getUserLocation()
         } else {
             requestLocationPermission()
         }
+    }
+    private fun openRestaurantDetails(restaurant: RestaurantResponse) {
+        val intent = Intent(this, RestaurantDetailsActivityCustomer::class.java)
+        intent.putExtra("restaurantName", restaurant.name)
+        intent.putExtra("restaurantDescription", restaurant.description)
+        intent.putExtra("restaurantAddress", restaurant.address)
+        intent.putExtra("restaurantId", restaurant.id)
+        startActivity(intent)
+    }
+    private fun filterRestaurants(query: String) {
+        val filteredList = if (query.isEmpty()) {
+            allRestaurants
+        } else {
+            allRestaurants.filter { it.name?.contains(query, ignoreCase = true) == true }
+        }
+        adapter.updateRestaurants(filteredList)
+    }
+
+    private fun showLoading() {
+        loadingLayout.visibility = View.VISIBLE
+        recyclerView.visibility = View.GONE
+    }
+
+    private fun hideLoading() {
+        loadingLayout.visibility = View.GONE
+        recyclerView.visibility = View.VISIBLE
     }
 
     private fun checkLocationPermission(): Boolean {
@@ -127,7 +166,6 @@ class CustomerHomepageActivityCustomer : CustomerBaseActivity() {
         }
     }
 
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchRestaurants() {
         val token = "Bearer ${OfflineStorageService.getToken(this)}"
@@ -143,53 +181,20 @@ class CustomerHomepageActivityCustomer : CustomerBaseActivity() {
                     withContext(Dispatchers.Main) {
                         allRestaurants = restaurants
                         adapter.updateRestaurants(restaurants)
+                        hideLoading()  // Hide loading spinner after fetching restaurants
                     }
                 } else {
                     withContext(Dispatchers.Main) {
+                        hideLoading()
                         Toast.makeText(this@CustomerHomepageActivityCustomer, "Failed to fetch restaurants", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 println("Error: " + e.message)
                 withContext(Dispatchers.Main) {
+                    hideLoading()
                     Toast.makeText(this@CustomerHomepageActivityCustomer, "Error fetching restaurants", Toast.LENGTH_SHORT).show()
                 }
-            }
-        }
-    }
-
-    private fun filterRestaurants(query: String) {
-        val filteredList = if (query.isEmpty()) {
-            allRestaurants
-        } else {
-            allRestaurants.filter { it.name?.contains(query, ignoreCase = true) == true }
-        }
-        adapter.updateRestaurants(filteredList)
-    }
-
-    private fun openRestaurantDetails(restaurant: RestaurantResponse) {
-        val intent = Intent(this, RestaurantDetailsActivityCustomer::class.java)
-        intent.putExtra("restaurantName", restaurant.name)
-        intent.putExtra("restaurantDescription", restaurant.description)
-        intent.putExtra("restaurantAddress", restaurant.address)
-        intent.putExtra("restaurantId", restaurant.id)
-        startActivity(intent)
-    }
-
-    override fun getSelectedItemId(): Int {
-        return R.id.nav_home  // Indicate that this is the Home page
-    }
-
-    // Handle location permission result
-    @RequiresApi(Build.VERSION_CODES.O)
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                getUserLocation()
-            } else {
-                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show()
-                fetchRestaurants()  // Proceed without location
             }
         }
     }

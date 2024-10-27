@@ -1,5 +1,6 @@
 package com.example.meal_mission_app.pages.customer
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import com.example.meal_mission_app.R
 import android.graphics.Color
@@ -15,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.meal_mission_app.DTO.Location
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
+import com.example.meal_mission_app.pages.LoginActivity
 import com.example.meal_mission_app.pages.restaurant.CustomerOrderDto
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
@@ -58,6 +60,13 @@ class CustomerOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Check if user is logged in
+        if (!isUserLoggedIn()) {
+            redirectToLogin()
+            return
+        }
+
         setContentView(R.layout.activity_customer_order_details)
 
         // Initialize UI elements
@@ -79,7 +88,20 @@ class CustomerOrderDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Fetch order details
         fetchOrderDetails()
     }
+    // Function to check if user is logged in
+    private fun isUserLoggedIn(): Boolean {
+        val userId = OfflineStorageService.getUserId(this)
+        return userId != null
+    }
 
+    // Function to redirect to login activity
+    private fun redirectToLogin() {
+        Toast.makeText(this, "User is not logged in. Redirecting to login...", Toast.LENGTH_SHORT).show()
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish() // Close current activity
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchOrderDetails() {
         orderId = intent.getLongExtra("orderId", -1)

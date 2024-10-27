@@ -33,7 +33,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         private const val NOTIFICATION_REQUEST_CODE = 1001
     }
 
-    // Called when a new token is generated or refreshed
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onNewToken(token: String) {
         super.onNewToken(token)
@@ -73,23 +72,23 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         Log.d(TAG, "Message received from: ${remoteMessage.from}")
 
-        // Check if the message contains a notification payload.
-        remoteMessage.notification?.let {
-            Log.d(TAG, "Message Notification Title: ${it.title}")
-            Log.d(TAG, "Message Notification Body: ${it.body}")
+        // Use the data payload instead of the notification payload
+        if (remoteMessage.data.isNotEmpty()) {
+            val data = remoteMessage.data
+            val title = data["title"]
+            val body = data["body"]
+            val activityToLaunch = data["activity"]
+            val orderId = data["orderId"]
 
-            // Check if the message contains data payload.
-            val activityToLaunch = remoteMessage.data["activity"]
-            val orderId = remoteMessage.data["orderId"]
+            Log.d(TAG, "Data Payload - Title: $title")
+            Log.d(TAG, "Data Payload - Body: $body")
+            Log.d(TAG, "Activity to launch: $activityToLaunch")
+            Log.d(TAG, "Order ID: $orderId")
 
-            println("Activity to launch: $activityToLaunch")
-            println("Order ID: $orderId")
-
-            // Handle the notification payload and pass the data for intent
-            showNotification(it.title, it.body, activityToLaunch, orderId)
+            // Handle the data payload and pass the data for intent
+            showNotification(title, body, activityToLaunch, orderId)
         }
     }
-
 
     // Function to display a notification
     private fun showNotification(
@@ -149,7 +148,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         // Build the notification
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_notification) // Replace with your app's notification icon
+            .setSmallIcon(R.drawable.app_logo) // Replace with your app's notification icon
             .setContentTitle(title ?: "Notification")
             .setContentText(message ?: "You have a new message")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -167,6 +166,4 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             NotificationManagerCompat.from(this).notify(notificationId, notificationBuilder.build())
         }
     }
-
-
 }

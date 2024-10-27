@@ -9,6 +9,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.*
+import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -35,6 +37,9 @@ class DriverLiveOrdersFragment : Fragment() {
     private var retryCount = 0
     private val MAX_RETRIES = 5
 
+    private lateinit var progressBarLoading: ProgressBar
+    private lateinit var textViewNoData: TextView
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_orders, container, false)
@@ -49,6 +54,9 @@ class DriverLiveOrdersFragment : Fragment() {
         }
         recyclerView.adapter = orderAdapter
 
+        progressBarLoading = view.findViewById(R.id.progressBarLoading)
+        textViewNoData = view.findViewById(R.id.textViewNoData)
+
         locationService = LocationService(requireContext())
         return view
     }
@@ -59,9 +67,16 @@ class DriverLiveOrdersFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onResume() {
         super.onResume()
-        // Start or resume polling every time the fragment is visible
         if (checkLocationPermission()) {
+            if (orders.isEmpty()) {
+                // Show loading indicator
+                progressBarLoading.visibility = View.VISIBLE
+                textViewNoData.visibility = View.GONE
+                recyclerView.visibility = View.GONE
+            }
             startPolling()
+        } else {
+            requestLocationPermission()
         }
     }
     @RequiresApi(Build.VERSION_CODES.O)
@@ -144,7 +159,7 @@ class DriverLiveOrdersFragment : Fragment() {
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private suspend fun fetchDriverOrders(latitude: Double, longitude: Double) {
+    private fun fetchDriverOrders(latitude: Double, longitude: Double) {
         if (!isAdded) return
         val token = "Bearer ${OfflineStorageService.getToken(requireContext())}"
 
@@ -153,22 +168,30 @@ class DriverLiveOrdersFragment : Fragment() {
             "driverLongitude" to longitude.toString()
         )
 
-        try {
-            val response = NetworkClient.apiService.getReadyOrders(requestData, token)
-            if (response.isSuccessful) {
-                val newOrders = response.body() ?: emptyList()
-                updateOrders(newOrders)
-            } else if(response.code() == 404){
-                orders.clear()
-            } else {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = NetworkClient.apiService.getReadyOrders(requestData, token)
+                if (response.isSuccessful) {
+                    val newOrders = response.body() ?: emptyList()
+                    updateOrders(newOrders)
+                } else {
+                    withContext(Dispatchers.Main) {
+                        handleErrorResponse()
+                    }
+                }
+            } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Failed to fetch driver orders", Toast.LENGTH_SHORT).show()
+                    handleErrorResponse()
+                    Toast.makeText(context, "Error fetching driver orders: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Error fetching driver orders: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+        }
+    }
+    private fun handleErrorResponse() {
+        progressBarLoading.visibility = View.GONE
+        recyclerView.visibility = View.GONE
+        if (orders.isEmpty()) {
+            textViewNoData.visibility = View.VISIBLE
         }
     }
 
@@ -178,8 +201,22 @@ class DriverLiveOrdersFragment : Fragment() {
         if (updatedOrders != orders) {
             orders.clear()
             orders.addAll(updatedOrders)
-            CoroutineScope(Dispatchers.Main).launch {
+            lifecycleScope.launch(Dispatchers.Main) {
+                progressBarLoading.visibility = View.GONE
+                textViewNoData.visibility = View.GONE
+                recyclerView.visibility = View.VISIBLE
                 orderAdapter.notifyDataSetChanged()
+            }
+        } else {
+            lifecycleScope.launch(Dispatchers.Main) {
+                progressBarLoading.visibility = View.GONE
+                if (orders.isEmpty()) {
+                    recyclerView.visibility = View.GONE
+                    textViewNoData.visibility = View.VISIBLE
+                } else {
+                    recyclerView.visibility = View.VISIBLE
+                    textViewNoData.visibility = View.GONE
+                }
             }
         }
     }

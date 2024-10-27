@@ -1,52 +1,70 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- activity_driver_order_detail.xml -->
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scrollViewOrderDetails"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <!-- Toolbar at the top -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <LinearLayout
+        android:id="@+id/orderDetailsLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        android:title="Order Details"
-        android:titleTextColor="@android:color/white" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <!-- Order details text view -->
-    <TextView
-        android:id="@+id/textViewOrderDetails"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:layout_below="@id/toolbar"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp" />
+        <!-- Toolbar at the top -->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:title="Order Details"
+            android:titleTextColor="@android:color/white" />
 
-    <!-- Button to accept the order -->
-    <Button
-        android:id="@+id/buttonAccept"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Accept"
-        android:layout_below="@id/textViewOrderDetails"
-        android:layout_marginBottom="8dp" />
+        <!-- Order details text view -->
+        <TextView
+            android:id="@+id/textViewOrderDetails"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
 
-    <!-- Button to mark the order as delivered -->
-    <Button
-        android:id="@+id/buttonDelivered"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Delivered"
-        android:layout_below="@id/buttonAccept"
-        android:layout_marginBottom="16dp"
-        android:enabled="false" />
+        <!-- Buttons -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonAccept"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Accept Order"
+            style="@style/CustomButtonStyle"
+            android:layout_marginTop="8dp" />
 
-    <!-- MapView positioned below the buttons -->
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/mapView"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_below="@id/buttonDelivered"
-        android:layout_marginBottom="16dp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonNotifyCustomer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Notify Customer"
+            style="@style/CustomButtonStyle"
+            android:layout_marginTop="8dp"
+            android:enabled="false" />
 
-</RelativeLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonDelivered"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mark as Delivered"
+            style="@style/CustomButtonStyle"
+            android:layout_marginTop="8dp"
+            android:enabled="false" />
+
+        <!-- MapView -->
+        <com.google.android.gms.maps.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
+
+    </LinearLayout>
+</ScrollView>

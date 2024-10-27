@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -16,15 +17,18 @@ import com.example.meal_mission_app.helper.OrderStatus
 import java.time.LocalDate
 import java.time.LocalTime
 
-class RestaurantOrderListActivity : AppCompatActivity() {
+class RestaurantOrderListActivity : RestaurantBaseActivity() {
     private lateinit var viewPager: ViewPager2
     private lateinit var pagerAdapter: OrdersPagerAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Set the content view to the layout containing TabLayout and ViewPager2
-        setContentView(R.layout.activity_order_list)
+        // Inflate the layout containing TabLayout and ViewPager2 into the base layout's content area
+        val inflater = layoutInflater
+        val contentView = inflater.inflate(R.layout.activity_order_list, findViewById(R.id.activity_content), false)
+        findViewById<FrameLayout>(R.id.activity_content).addView(contentView)
 
+        // Initialize view components after inflating
         viewPager = findViewById(R.id.viewPager)
         pagerAdapter = OrdersPagerAdapter(this)
         viewPager.adapter = pagerAdapter
@@ -34,6 +38,10 @@ class RestaurantOrderListActivity : AppCompatActivity() {
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = if (position == 0) "Live Orders" else "Completed Orders"
         }.attach()
+    }
+
+    override fun getSelectedItemId(): Int {
+        return R.id.nav_restaurant_orders
     }
 }
 class OrdersPagerAdapter(activity: AppCompatActivity) : FragmentStateAdapter(activity) {

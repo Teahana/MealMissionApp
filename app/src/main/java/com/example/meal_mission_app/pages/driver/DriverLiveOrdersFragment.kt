@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.meal_mission_app.R
@@ -30,6 +31,7 @@ class DriverLiveOrdersFragment : Fragment() {
     private val orders = mutableListOf<CustomerLiveOrder>()
     private var pollingJob: Job? = null
     private var bestLocation: Location? = null
+    private var bestLocationSoFar: Location? = null
     private var retryCount = 0
     private val MAX_RETRIES = 5
 
@@ -114,28 +116,36 @@ class DriverLiveOrdersFragment : Fragment() {
         locationService.getCurrentLocation { location ->
             if (location != null) {
                 bestLocation = location
-                CoroutineScope(Dispatchers.IO).launch {
-                    fetchDriverOrders(location.latitude, location.longitude)
+                if (isVisible && isAdded) {  // Ensure fragment is in a valid state
+                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                        fetchDriverOrders(location.latitude, location.longitude)
+                    }
                 }
             } else {
                 if (retryCount < MAX_RETRIES) {
                     retryCount++
                     Handler(Looper.getMainLooper()).postDelayed({ getUserLocation() }, 2000)
                 } else {
-                    bestLocation?.let {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            fetchDriverOrders(it.latitude, it.longitude)
+                    bestLocationSoFar?.let {
+                        if (isVisible && isAdded) {  // Ensure fragment is in a valid state
+                            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                                fetchDriverOrders(it.latitude, it.longitude)
+                            }
                         }
                     } ?: run {
-                        Toast.makeText(context, "Unable to find accurate location.", Toast.LENGTH_LONG).show()
+                        if (isVisible && isAdded) {  // Ensure fragment is in a valid state
+                            Toast.makeText(context, "Unable to find accurate location. Using inaccurate location", Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
             }
         }
     }
 
+
     @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun fetchDriverOrders(latitude: Double, longitude: Double) {
+        if (!isAdded) return
         val token = "Bearer ${OfflineStorageService.getToken(requireContext())}"
 
         val requestData = mapOf(

@@ -1,20 +1,170 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:background="@android:color/white">
 
-    <EditText
-        android:id="@+id/searchBar"
+    <!-- Top Header with Logo, Search Bar, and Nav-like Tabs -->
+    <LinearLayout
+        android:id="@+id/header_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Search Restaurants" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+        <!-- Logo Image -->
+        <ImageView
+            android:id="@+id/logo_image"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:contentDescription="App Logo"
+            android:src="@drawable/logo" /> <!-- Replace with your logo drawable -->
+
+        <!-- Search Bar -->
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Search for restaurants or items"
+            android:background="@drawable/search_bar_background"
+            android:padding="12dp"
+            android:drawableStart="@drawable/ic_search"
+            android:drawablePadding="8dp"
+            android:layout_marginTop="8dp" /> <!-- Added margin for spacing -->
+
+        <!-- Nav Bar Tabs -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@android:color/white"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <!-- Tab Buttons -->
+                <Button
+                    android:id="@+id/tab1_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:text="Tab 1"
+                    android:textColor="@android:color/black"
+                    android:background="@drawable/tab_background"
+                    android:padding="8dp" />
+
+                <Button
+                    android:id="@+id/tab2_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:text="Tab 2"
+                    android:textColor="@android:color/black"
+                    android:background="@drawable/tab_background"
+                    android:padding="8dp" />
+
+                <Button
+                    android:id="@+id/tab3_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:text="Tab 3"
+                    android:textColor="@android:color/black"
+                    android:background="@drawable/tab_background"
+                    android:padding="8dp" />
+
+                <Button
+                    android:id="@+id/tab4_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:text="Tab 4"
+                    android:textColor="@android:color/black"
+                    android:background="@drawable/tab_background"
+                    android:padding="8dp" />
+
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <!-- Content Area -->
+    <!-- Updated to use footer_buttons -->
+
+    <!-- Footer Button Tabs -->
+    <FrameLayout
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingTop="16dp" />
+        android:layout_height="0dp"
+        android:layout_above="@id/footer_buttons"
+        android:layout_below="@id/header_layout"
+        android:layout_marginTop="1dp"
+        android:layout_marginBottom="-1dp"
+        android:layout_weight="1" />
 
-</LinearLayout>
+    <LinearLayout
+        android:id="@+id/footer_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_above="@id/bottom_navigation"
+        android:background="E8B86D"
+        android:weightSum="4"
+        android:padding="8dp">
+
+
+        <!-- Home Button -->
+        <Button
+            android:id="@+id/footer_home"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Home"
+            android:textColor="@android:color/black"
+            android:background="@drawable/footer_button_background" /> <!-- Custom drawable -->
+
+        <!-- Cart Button -->
+        <Button
+            android:id="@+id/footer_cart"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Cart"
+            android:textColor="@android:color/black"
+            android:background="@drawable/footer_button_background" />
+
+        <!-- Orders Button -->
+        <Button
+            android:id="@+id/footer_orders"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Orders"
+            android:textColor="@android:color/black"
+            android:background="@drawable/footer_button_background" />
+
+        <!-- Profile Button -->
+        <Button
+            android:id="@+id/footer_profile"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Profile"
+            android:textColor="@android:color/black"
+            android:background="@drawable/footer_button_background" />
+    </LinearLayout>
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@android:color/white"
+        app:itemBackground="@drawable/bottom_nav_item_background"
+        app:menu="@menu/bottom_navigation_menu" />
+</RelativeLayout>

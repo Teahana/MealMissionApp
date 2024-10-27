@@ -1,29 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/driverHomepageLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
-    android:padding="16dp">
+    android:background="@color/colorBackground">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Header with Logo Image -->
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Driver Homepage"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="24dp" />
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="16dp"
+        android:background="@color/colorPrimary">
 
-    <Button
-        android:id="@+id/startButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start Location Updates" />
+        <ImageView
+            android:id="@+id/logo_image"
+            android:layout_width="120dp"
+            android:layout_height="60dp"
+            android:src="@drawable/logo" />
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/stopButton"
-        android:layout_width="wrap_content"
+    <!-- Content Layout -->
+    <LinearLayout
+        android:id="@+id/contentLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Stop Location Updates"
-        android:layout_marginTop="16dp" />
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="16dp">
+
+        <!-- Driver Homepage Title -->
+        <TextView
+            android:id="@+id/driverHomepageTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Driver Homepage"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorTextPrimary"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Start Location Updates Button -->
+        <Button
+            android:id="@+id/startButton"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="Start Location Updates"
+            android:textColor="@color/colorTextButton"
+            android:textSize="16sp"
+            android:background="@drawable/button_background"
+            android:layout_marginTop="8dp" />
+
+        <!-- Stop Location Updates Button -->
+        <Button
+            android:id="@+id/stopButton"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="Stop Location Updates"
+            android:textColor="@color/colorTextButton"
+            android:textSize="16sp"
+            android:background="@drawable/button_background"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
 </LinearLayout>

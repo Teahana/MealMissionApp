@@ -27,18 +27,18 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import com.example.meal_mission_app.DTO.ChangePasswordRequest
 import com.example.meal_mission_app.DTO.Restaurant
 import com.example.meal_mission_app.R
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
-import com.example.meal_mission_app.pages.LoginActivity
+import com.example.meal_mission_app.pages.auth.LoginActivity
 import com.example.meal_mission_app.services.LocationService
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
@@ -60,7 +60,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -124,20 +123,140 @@ class ProfilePagerAdapter(fragmentActivity: FragmentActivity) : FragmentStateAda
 
 class BasicInfoFragment : Fragment() {
 
+    private lateinit var textViewName: TextView
+    private lateinit var textViewEmail: TextView
+    private lateinit var textViewPhone: TextView
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
+
     ): View? {
-        return inflater.inflate(R.layout.fragment_basic_info, container, false)
+        val view = inflater.inflate(R.layout.fragment_basic_info, container, false)
+        textViewName = view.findViewById(R.id.textViewName)
+        textViewEmail = view.findViewById(R.id.textViewEmail)
+        textViewPhone = view.findViewById(R.id.textViewPhone)
+
+        fetchUserDetails()
+
+        return view
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun fetchUserDetails() {
+        val userId: Long = OfflineStorageService.getUserId(requireContext())?.toLong()
+            ?: throw IllegalArgumentException("Invalid userId")
+        val token = "Bearer ${OfflineStorageService.getToken(requireContext())}"
+
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.apiService.getUserDetails(userId, token)
+                if (response.isSuccessful) {
+                    response.body()?.let { userDetails ->
+                        textViewName.text = userDetails.name
+                        textViewEmail.text = userDetails.email
+                        textViewPhone.text = userDetails.phoneNumber
+                    }
+                } else {
+                    showToast("Failed to fetch user details")
+                }
+            } catch (e: Exception) {
+                showToast("Error: ${e.message}")
+            }
+        }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 }
 class ChangePasswordFragment : Fragment() {
 
+    private lateinit var editTextCurrentPassword: EditText
+    private lateinit var editTextNewPassword: EditText
+    private lateinit var editTextConfirmNewPassword: EditText
+    private lateinit var buttonChangePassword: Button
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
+
     ): View? {
-        return inflater.inflate(R.layout.fragment_change_password, container, false)
+        val view = inflater.inflate(R.layout.fragment_change_password, container, false)
+        editTextCurrentPassword = view.findViewById(R.id.editTextCurrentPassword)
+        editTextNewPassword = view.findViewById(R.id.editTextNewPassword)
+        editTextConfirmNewPassword = view.findViewById(R.id.editTextConfirmNewPassword)
+        buttonChangePassword = view.findViewById(R.id.buttonChangePassword)
+
+        buttonChangePassword.setOnClickListener {
+            handleChangePassword()
+        }
+
+        return view
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun handleChangePassword() {
+        val currentPassword = editTextCurrentPassword.text.toString().trim()
+        val newPassword = editTextNewPassword.text.toString().trim()
+        val confirmNewPassword = editTextConfirmNewPassword.text.toString().trim()
+
+        if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmNewPassword.isEmpty()) {
+            showToast("Please fill in all fields")
+            return
+        }
+
+        if (newPassword != confirmNewPassword) {
+            showToast("New passwords do not match")
+            return
+        }
+
+        if (newPassword.length < 6) {
+            showToast("Password must be at least 6 characters")
+            return
+        }
+
+        // Add any additional password strength validation here
+
+        val userId = OfflineStorageService.getUserId(requireContext())
+        val token = "Bearer ${OfflineStorageService.getToken(requireContext())}"
+
+        val changePasswordRequest = userId?.let {
+            ChangePasswordRequest(
+                userId = it.toLong(),
+                currentPassword = currentPassword,
+                newPassword = newPassword
+            )
+        }
+
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.apiService.changePassword(changePasswordRequest, token)
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        if (it.success) {
+                            showToast("Password changed successfully")
+                            // Optionally, clear the input fields
+                            editTextCurrentPassword.text.clear()
+                            editTextNewPassword.text.clear()
+                            editTextConfirmNewPassword.text.clear()
+                        } else {
+                            showToast(it.message)
+                        }
+                    }
+                } else {
+                    showToast("Failed to change password")
+                }
+            } catch (e: Exception) {
+                showToast("Error: ${e.message}")
+            }
+        }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 }
 class UserLocationAdapter(
@@ -712,50 +831,52 @@ class AddAddressBottomSheet(
     }
 
     private fun getUserLocation() {
-        showLoading("Fetching precise location...")
+        // Update the loading message to include the attempt count
+        showLoading("Fetching your location... (Attempt ${retryCount + 1} of $MAX_RETRIES)")
 
         locationService.getCurrentLocation { location ->
             if (location != null) {
                 if (location.accuracy <= 30) {
-                    bestLocation = location
+                    // Precise location found, proceed
                     hideLoading()
                     val userLatLng = LatLng(location.latitude, location.longitude)
                     placeMarkerOnMap(userLatLng, true)
                 } else {
-                    if (bestLocation == null || location.accuracy < bestLocation?.accuracy ?: Float.MAX_VALUE) {
-                        bestLocation = location
-                    }
-                    if (retryCount < MAX_RETRIES) {
+                    if (retryCount >= MAX_RETRIES - 1) {
+                        // After MAX_RETRIES, use the current location regardless of accuracy
+                        hideLoading()
+                        Toast.makeText(
+                            requireContext(),
+                            "Couldn't get precise location, using the best available.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        val userLatLng = LatLng(location.latitude, location.longitude)
+                        placeMarkerOnMap(userLatLng, true)
+                    } else {
+                        // Retry
                         retryCount++
                         handler.postDelayed({ getUserLocation() }, 2000)
-                    } else {
-                        hideLoading()
-                        bestLocation?.let {
-                            Toast.makeText(requireContext(), "Unable to find accurate location, using close approximation.", Toast.LENGTH_LONG).show()
-                            val userLatLng = LatLng(it.latitude, it.longitude)
-                            placeMarkerOnMap(userLatLng, true)
-                        } ?: run {
-                            Toast.makeText(requireContext(), "Unable to find location. Please select your location on the map.", Toast.LENGTH_LONG).show()
-                        }
                     }
                 }
             } else {
-                if (retryCount < MAX_RETRIES) {
+                if (retryCount >= MAX_RETRIES - 1) {
+                    // No location found after retries
+                    hideLoading()
+                    Toast.makeText(
+                        requireContext(),
+                        "Unable to get your location. Please select it on the map.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    // Retry
                     retryCount++
                     handler.postDelayed({ getUserLocation() }, 2000)
-                } else {
-                    hideLoading()
-                    bestLocation?.let {
-                        Toast.makeText(requireContext(), "Unable to find accurate location, using close approximation.", Toast.LENGTH_LONG).show()
-                        val userLatLng = LatLng(it.latitude, it.longitude)
-                        placeMarkerOnMap(userLatLng, true)
-                    } ?: run {
-                        Toast.makeText(requireContext(), "Unable to find location. Please select your location on the map.", Toast.LENGTH_LONG).show()
-                    }
                 }
             }
         }
     }
+
+
 
     private fun showLoading(message: String) {
         loadingTextView.text = message

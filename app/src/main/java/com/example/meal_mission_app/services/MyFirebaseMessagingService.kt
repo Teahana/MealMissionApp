@@ -19,7 +19,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
-import com.example.meal_mission_app.pages.LoginActivity
+import com.example.meal_mission_app.pages.auth.LoginActivity
 import com.example.meal_mission_app.pages.customer.CustomerOrderDetailsActivity
 import com.example.meal_mission_app.pages.driver.DriverOrderListActivity
 import kotlinx.coroutines.CoroutineScope

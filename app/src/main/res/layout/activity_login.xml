@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="#FFFFFF"> <!-- Set background color -->
+    android:background="#FFFFFF">
 
     <!-- Header Part for Image Logo -->
     <ImageView
@@ -19,36 +19,35 @@
     <!-- Big Label for Meal Mission -->
     <TextView
         android:id="@+id/meal_mission_label"
-        android:layout_width="365dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
         android:fontFamily="sans-serif"
         android:gravity="center"
         android:text="Meal Mission"
         android:textSize="32sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
 
-    <!-- Label for Username -->
+    <!-- Username Label and EditText -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Username"
         android:fontFamily="sans-serif"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="4dp"/>
+        android:layout_marginBottom="4dp" />
 
-    <!-- Username EditText styled like a default HTML text box -->
     <EditText
         android:id="@+id/username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter your username"
+        android:hint="Enter your email"
         android:fontFamily="sans-serif"
         android:padding="10dp"
         android:layout_marginBottom="16dp"
         android:background="@android:drawable/editbox_background" />
 
-    <!-- Label for Password -->
+    <!-- Password Label and EditText -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -57,7 +56,6 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="4dp" />
 
-    <!-- Password EditText styled like a default HTML text box -->
     <EditText
         android:id="@+id/password"
         android:layout_width="match_parent"
@@ -69,38 +67,52 @@
         android:layout_marginBottom="16dp"
         android:background="@android:drawable/editbox_background" />
 
-    <!-- Login Button with rounded corners -->
+    <!-- Login Button -->
     <Button
         android:id="@+id/login_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Login"
         android:layout_gravity="center_horizontal"
-        android:layout_marginHorizontal="60dp"
         android:background="@drawable/rounded_button"
         android:textColor="#FFFFFF"
         android:padding="12dp"
-    />
+        android:layout_marginTop="16dp" />
+
+    <!-- Quick Login Buttons -->
     <Button
         android:id="@+id/customer_login_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Login as Customer"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/driver_login_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Login as Driver"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/restaurant_login_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Login as Restaurant"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
 
-
+    <!-- Register Link -->
+    <TextView
+        android:id="@+id/register_link"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New here? Register"
+        android:textColor="@color/linkColor"
+        android:textStyle="bold"
+        android:layout_marginTop="24dp"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal" />
 </LinearLayout>

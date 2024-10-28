@@ -1,4 +1,4 @@
-package com.example.meal_mission_app.pages
+package com.example.meal_mission_app.pages.auth
 
 import android.Manifest
 import android.content.Intent
@@ -6,9 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -19,12 +17,8 @@ import com.example.meal_mission_app.objects.OfflineStorageService
 import com.example.meal_mission_app.pages.customer.CustomerHomepageActivityCustomer
 import com.example.meal_mission_app.pages.driver.DriverOrderListActivity
 import com.example.meal_mission_app.pages.restaurant.RestaurantOrderListActivity
-//import com.example.meal_mission_app.pages.restaurant.RestaurantOrderListActivity
 import com.google.firebase.messaging.FirebaseMessaging
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 class LoginActivity : AppCompatActivity() {
 
@@ -35,17 +29,36 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var driverLoginButton: Button
     private lateinit var restaurantLoginButton: Button
 
+    private lateinit var registerLink: TextView
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        // **Check if user is already logged in**
+        val userId = OfflineStorageService.getUserId(this)
+        val userType = OfflineStorageService.getUserType(this)
+        if (userId != null && userType != null) {
+            // **User is already logged in, navigate to corresponding activity**
+            navigateToUserActivity(userType)
+            finish()
+            return
+        }
+
+        // **Initialize views only if user is not logged in**
         usernameEditText = findViewById(R.id.username)
         passwordEditText = findViewById(R.id.password)
         loginButton = findViewById(R.id.login_button)
         customerLoginButton = findViewById(R.id.customer_login_button)
         driverLoginButton = findViewById(R.id.driver_login_button)
         restaurantLoginButton = findViewById(R.id.restaurant_login_button)
+
+        registerLink = findViewById(R.id.register_link)
+        registerLink.setOnClickListener {
+            val intent = Intent(this, RegistrationActivity::class.java)
+            startActivity(intent)
+        }
 
         // Request notification permission if required
         checkAndRequestNotificationPermission()
@@ -66,6 +79,16 @@ class LoginActivity : AppCompatActivity() {
 
         restaurantLoginButton.setOnClickListener {
             fetchFcmTokenAndLogin("restaurant", "password")
+        }
+    }
+
+    // **Function to navigate to the corresponding user activity**
+    private fun navigateToUserActivity(userType: String) {
+        when (userType) {
+            "DRIVER" -> startActivity(Intent(this@LoginActivity, DriverOrderListActivity::class.java))
+            "RESTAURANT" -> startActivity(Intent(this@LoginActivity, RestaurantOrderListActivity::class.java))
+            "CUSTOMER" -> startActivity(Intent(this@LoginActivity, CustomerHomepageActivityCustomer::class.java))
+            else -> Toast.makeText(this@LoginActivity, "Unknown user type", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -99,7 +122,6 @@ class LoginActivity : AppCompatActivity() {
             }
 
             // Get the FCM token
-            println("FCM FETCHED SUCCESSFFULLY F")
             val fcmToken = task.result
 
             // Now, perform the login with FCM token included
@@ -133,21 +155,25 @@ class LoginActivity : AppCompatActivity() {
 
                     // Determine where to navigate based on userType
                     withContext(Dispatchers.Main) {
-                        when (userType) {
-                            "DRIVER" -> startActivity(Intent(this@LoginActivity, DriverOrderListActivity::class.java))
-                            "RESTAURANT" -> startActivity(Intent(this@LoginActivity, RestaurantOrderListActivity::class.java))
-                            "CUSTOMER" -> startActivity(Intent(this@LoginActivity, CustomerHomepageActivityCustomer::class.java))
-                            else -> Toast.makeText(this@LoginActivity, "Unknown user type", Toast.LENGTH_SHORT).show()
+                        if (userType != null) {
+                            navigateToUserActivity(userType)
+                        } else {
+                            Toast.makeText(this@LoginActivity, "Unknown user type", Toast.LENGTH_SHORT).show()
                         }
                         finish()
                     }
                 } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@LoginActivity, "Login failed: ${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
+                    }
                     Log.w("LoginActivity", "Login failed: ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@LoginActivity, "Error during login: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                }
                 Log.e("LoginActivity", "Error during login: ${e.localizedMessage}")
             }
         }
     }
 }
-

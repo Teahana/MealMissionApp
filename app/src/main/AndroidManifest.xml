@@ -38,7 +38,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCyNQXSZN-qOP__Xu15JCqPIQVQUHjZN5k" />
         <activity
-            android:name=".pages.LoginActivity"
+            android:name=".pages.auth.LoginActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
@@ -89,6 +89,11 @@
             android:name=".pages.customer.ProfileActivityCustomer"
             android:exported="true"
             android:label="RestaurantDetails"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+        <activity
+            android:name=".pages.auth.RegistrationActivity"
+            android:exported="true"
+            android:label="RegistrationActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
 
         <!-- Driver pages -->

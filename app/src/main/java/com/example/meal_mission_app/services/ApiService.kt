@@ -1,12 +1,17 @@
 package com.example.meal_mission_app.services;
 
+import com.example.meal_mission_app.DTO.ApiResponse
+import com.example.meal_mission_app.DTO.ChangePasswordRequest
+import com.example.meal_mission_app.DTO.ChangePasswordResponse
 import com.example.meal_mission_app.DTO.ImageUploadResponse
 import com.example.meal_mission_app.DTO.Item
 import com.example.meal_mission_app.DTO.Location
 import com.example.meal_mission_app.DTO.LoginResponse
 import com.example.meal_mission_app.DTO.Meal
+import com.example.meal_mission_app.DTO.RegistrationRequest
 import com.example.meal_mission_app.DTO.Restaurant
 import com.example.meal_mission_app.DTO.RestaurantResponse
+import com.example.meal_mission_app.DTO.UserDetailsResponse
 import com.example.meal_mission_app.pages.customer.RestaurantDetailResponse
 import com.example.meal_mission_app.pages.customer.UserLocation
 import com.example.meal_mission_app.pages.restaurant.CustomerLiveOrder
@@ -230,13 +235,34 @@ interface ApiService {
         @Header("Authorization") authToken: String
     ): Response<Map<String,Any>>
 
-    // ApiService.kt
 
     @POST("/api/notifyCustomer")
     suspend fun notifyCustomer(
         @Body data: Map<String, String>,
         @Header("Authorization") authToken: String
     ): Response<Map<String, Any>>
+
+
+    @GET("/api/user/details")
+    suspend fun getUserDetails(
+        @Query("userId") userId: Long,
+        @Header("Authorization") authToken: String
+    ): Response<UserDetailsResponse>
+
+
+    @POST("/api/user/changePassword")
+    suspend fun changePassword(
+        @Body changePasswordRequest: ChangePasswordRequest?,
+        @Header("Authorization") authToken: String
+    ): Response<ChangePasswordResponse>
+
+
+
+    @POST("/api/register/customer")
+    suspend fun registerCustomer(
+        @Body registrationRequest: RegistrationRequest
+    ): Response<ApiResponse>
+
 
 
 }

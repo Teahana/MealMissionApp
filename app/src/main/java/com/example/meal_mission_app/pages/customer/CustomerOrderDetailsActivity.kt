@@ -16,7 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.meal_mission_app.DTO.Location
 import com.example.meal_mission_app.objects.NetworkClient
 import com.example.meal_mission_app.objects.OfflineStorageService
-import com.example.meal_mission_app.pages.LoginActivity
+import com.example.meal_mission_app.pages.auth.LoginActivity
 import com.example.meal_mission_app.pages.restaurant.CustomerOrderDto
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*

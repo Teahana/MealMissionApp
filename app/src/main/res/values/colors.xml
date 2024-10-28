@@ -8,4 +8,5 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="colorPrimary">#FF018786</color>"
+    <color name="linkColor">#FF9800</color> <!-- Orange color for links -->
 </resources>
